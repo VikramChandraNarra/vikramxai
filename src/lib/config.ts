@@ -1,6 +1,18 @@
-export const PIPELINE_REFRESH_MS = 5 * 60 * 1000;
+// How often the background pipeline auto-refreshes stories (dev: setInterval).
+// In production replace with a cron job or platform scheduler.
+export const PIPELINE_REFRESH_MS = 100 * 60 * 1000; // 100 minutes
+
+// How long cached stories are considered fresh. Requests within this window
+// are served instantly from cache; stale requests get the old cache immediately
+// while a background refresh fires (stale-while-revalidate).
+export const CACHE_TTL_MS = 4 * 60 * 1000; // 4 minutes
+
+// Maximum tweets fetched per search query bucket during a pipeline run.
+// X API v2 hard cap is 100 per request.
 export const MAX_RESULTS_PER_QUERY = 100;
-export const MAX_STORIES = 10;
+
+// Maximum stories surfaced after ranking and clustering.
+export const MAX_STORIES = 20;
 export const SEARCH_QUERIES = [
   'AI technology lang:en -is:retweet',
   'breaking news lang:en -is:retweet',

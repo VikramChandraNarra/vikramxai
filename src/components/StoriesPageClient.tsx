@@ -3,9 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Story } from '@/lib/types';
-import { timeAgo } from '@/lib/utils';
-import { LeftRail } from '@/components/layout/LeftRail';
-import { RightRail } from '@/components/layout/RightRail';
+import { TopNav } from '@/components/layout/TopNav';
+import { RightPanel } from '@/components/layout/RightPanel';
 import { HeroStory } from '@/components/stories/HeroStory';
 import { StoryCard } from '@/components/stories/StoryCard';
 import { SkeletonFeed } from '@/components/ui/SkeletonFeed';
@@ -18,9 +17,7 @@ type SplashPhase = 'hold' | 'exit' | 'done';
 
 function SplashScreen({ phase }: { phase: SplashPhase }) {
   if (phase === 'done') return null;
-
   const isExiting = phase === 'exit';
-
   return (
     <div
       className="fixed inset-0 z-50 bg-black flex items-center justify-center"
@@ -51,6 +48,8 @@ function SplashScreen({ phase }: { phase: SplashPhase }) {
   );
 }
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+
 interface PipelineStatus {
   isRunning: boolean;
   lastRunAt: string | null;
@@ -66,89 +65,51 @@ interface StoriesData {
   status: PipelineStatus;
 }
 
+// ─── Constants ───────────────────────────────────────────────────────────────
+
 const POLL_MS = 30_000;
 const SIGNUP_URL = 'https://x.com/i/flow/signup';
 const LOGIN_URL = 'https://x.com/i/flow/login';
-const VISIBLE_STORY_COUNT = 3;
+const CTA_AFTER = 8;
 
-// ─── FOMO gate overlay ──────────────────────────────────────────────────────
+// ─── Inline CTA (appears mid-feed after scrolling) ──────────────────────────
 
-function FeedGate({ remainingCount }: { remainingCount: number }) {
+function InlineCta() {
   return (
-    <div className="relative">
-      {/* Blurred teaser rows behind the overlay */}
-      <div
-        className="pointer-events-none select-none"
-        style={{ filter: 'blur(6px)', WebkitFilter: 'blur(6px)' }}
-        aria-hidden="true"
-      >
-        {Array.from({ length: Math.min(remainingCount, 4) }).map((_, i) => (
-          <div
-            key={i}
-            className="px-6 py-5 border-b border-white/[0.08]"
-            style={{ opacity: 1 - i * 0.2 }}
+    <div className="col-span-2 border-b border-white/8 bg-white/2">
+      <div className="max-w-md mx-auto px-6 py-10 text-center">
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1d9bf0] opacity-50" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-[#1d9bf0]" />
+          </span>
+          <span className="text-[0.625rem] font-semibold tracking-[0.14em] uppercase text-[#1d9bf0]">
+            Live stories
+          </span>
+        </div>
+        <h3 className="text-[1.125rem] font-extrabold text-white tracking-[-0.02em] leading-[1.2] mb-1.5">
+          Follow every story as it breaks.
+        </h3>
+        <p className="text-[0.8125rem] text-[#71767b] leading-[1.55] mb-5">
+          Join X to get real-time updates, see the full conversation, and never miss a developing story.
+        </p>
+        <div className="flex items-center justify-center gap-3">
+          <a
+            href={SIGNUP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full bg-white px-6 py-2.5 text-[0.875rem] font-bold text-black hover:bg-white/90 active:scale-[0.98] transition-all duration-150"
           >
-            <div className="flex items-center justify-between mb-2.5">
-              <div className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#71767b]" />
-                <span className="text-[0.6875rem] font-semibold tracking-[0.12em] uppercase text-[#71767b]">
-                  Developing
-                </span>
-              </div>
-              <span className="text-[0.75rem] text-[#71767b]">just now</span>
-            </div>
-            <div className="h-5 w-4/5 rounded bg-white/[0.06] mb-2" />
-            <div className="h-4 w-3/5 rounded bg-white/[0.04] mb-3" />
-            <div className="flex items-start gap-2 border-l-2 border-white/[0.1] pl-3 py-1">
-              <div className="h-5 w-5 rounded-full bg-[#2a2a2a] flex-shrink-0" />
-              <div className="h-3 w-48 rounded bg-white/[0.04]" />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Gradient fade into black at the bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none" />
-
-      {/* Conversion overlay card */}
-      <div className="absolute inset-0 flex items-center justify-center px-6">
-        <div className="w-full max-w-[380px] rounded-2xl border border-white/[0.12] bg-black/80 backdrop-blur-xl shadow-2xl shadow-black/60 px-8 py-8 text-center animate-fade-in-up">
-          {/* Pulsing live dot */}
-          <div className="flex items-center justify-center gap-2 mb-5">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1d9bf0] opacity-50" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#1d9bf0]" />
-            </span>
-            <span className="text-[0.6875rem] font-semibold tracking-[0.12em] uppercase text-[#1d9bf0]">
-              More stories unfolding right now
-            </span>
-          </div>
-
-          <h3 className="text-[1.375rem] font-extrabold text-white tracking-[-0.02em] leading-[1.15] mb-2">
-            Join the conversation.
-          </h3>
-          <p className="text-[0.875rem] text-[#71767b] leading-[1.55] mb-6">
-            Discover more stories as they emerge across X.
-          </p>
-
-          <div className="flex flex-col gap-2.5">
-            <a
-              href={SIGNUP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full rounded-full bg-white py-2.5 text-center text-[0.9375rem] font-bold text-black hover:bg-white/90 active:scale-[0.98] transition-all duration-150"
-            >
-              Sign up for X
-            </a>
-            <a
-              href={LOGIN_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full rounded-full border border-white/[0.2] py-2.5 text-center text-[0.9375rem] font-bold text-white hover:bg-white/[0.06] active:scale-[0.98] transition-all duration-150"
-            >
-              Log in
-            </a>
-          </div>
+            Sign up for X
+          </a>
+          <a
+            href={LOGIN_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full border border-white/15 px-6 py-2.5 text-[0.875rem] font-bold text-white hover:bg-white/6 active:scale-[0.98] transition-all duration-150"
+          >
+            Log in
+          </a>
         </div>
       </div>
     </div>
@@ -159,9 +120,9 @@ function FeedGate({ remainingCount }: { remainingCount: number }) {
 
 function EmptyState({ isRunning }: { isRunning: boolean }) {
   return (
-    <div className="flex flex-col items-center justify-center px-6 py-32 text-center">
+    <div className="flex flex-col items-center justify-center px-8 py-32 text-center">
       <div className="relative mb-6">
-        <div className="h-12 w-12 rounded-full border border-white/[0.1] flex items-center justify-center">
+        <div className="h-12 w-12 rounded-full border border-white/10 flex items-center justify-center">
           <RiRefreshLine
             className={`text-[#71767b] ${isRunning ? 'animate-spin' : ''}`}
             size={22}
@@ -177,9 +138,9 @@ function EmptyState({ isRunning }: { isRunning: boolean }) {
       <h2 className="text-[1.125rem] font-bold text-white mb-2 tracking-[-0.01em]">
         {isRunning ? 'Intelligence loading' : 'No stories yet'}
       </h2>
-      <p className="text-[0.875rem] text-[#71767b] max-w-[280px] leading-relaxed">
+      <p className="text-[0.875rem] text-[#71767b] max-w-[260px] leading-relaxed">
         {isRunning
-          ? 'The pipeline is ingesting live conversations and clustering stories. This takes about 30–60 seconds.'
+          ? 'The pipeline is ingesting live conversations and clustering stories. This takes about 30\u201360 seconds.'
           : 'Trigger a refresh to start generating stories from live X conversations.'}
       </p>
     </div>
@@ -188,17 +149,17 @@ function EmptyState({ isRunning }: { isRunning: boolean }) {
 
 function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center px-6 py-32 text-center">
-      <div className="h-12 w-12 rounded-full border border-red-500/20 bg-red-500/[0.06] flex items-center justify-center mb-5">
+    <div className="flex flex-col items-center justify-center px-8 py-32 text-center">
+      <div className="h-12 w-12 rounded-full border border-red-500/20 bg-red-500/6 flex items-center justify-center mb-5">
         <span className="text-red-400 text-xl font-bold">!</span>
       </div>
       <h2 className="text-[1.125rem] font-bold text-white mb-2">Something went wrong</h2>
-      <p className="text-[0.8125rem] text-[#71767b] mb-6 max-w-[300px] font-mono leading-relaxed">
+      <p className="text-[0.8125rem] text-[#71767b] mb-6 max-w-[280px] font-mono leading-relaxed">
         {error}
       </p>
       <button
         onClick={onRetry}
-        className="rounded-full border border-white/[0.15] px-5 py-2.5 text-[0.875rem] font-semibold text-white hover:bg-white/[0.06] transition-colors"
+        className="rounded-full border border-white/15 px-5 py-2.5 text-[0.875rem] font-semibold text-white hover:bg-white/6 transition-colors"
       >
         Try again
       </button>
@@ -263,101 +224,94 @@ export function StoriesPageClient() {
 
   const isRunning = data?.status?.isRunning ?? false;
   const hasContent = !!data?.headlineStory;
-
-  const visibleStories = data?.stories.slice(0, VISIBLE_STORY_COUNT) ?? [];
-  const hiddenCount = Math.max((data?.stories.length ?? 0) - VISIBLE_STORY_COUNT, 0);
+  const allStories = data?.stories ?? [];
 
   return (
     <>
       <SplashScreen phase={splash} />
-      <LeftRail onRefresh={handleRefresh} isRefreshing={refreshing} />
 
-      {/* Center column */}
-      <div className="ml-[275px] mr-[350px] min-h-screen">
-        {/* Sticky feed header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-3.5 bg-black/85 backdrop-blur-md border-b border-white/[0.08]">
-          <div className="flex items-center gap-3">
-            <span className="text-[1.0625rem] font-extrabold text-white tracking-[-0.01em]">
-              Stories
-            </span>
-            <LiveIndicator isRunning={isRunning} />
-          </div>
-          <div className="flex items-center gap-3">
-            {lastFetched && (
-              <span className="text-[0.75rem] text-[#71767b]">
-                Updated {timeAgo(lastFetched.toISOString())}
-              </span>
-            )}
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              aria-label="Refresh stories"
-              className="p-2 rounded-full hover:bg-white/[0.08] transition-colors text-[#71767b] hover:text-white disabled:opacity-40"
-            >
-              <RiRefreshLine
-                className={refreshing ? 'animate-spin' : ''}
-                size={17}
-              />
-            </button>
-            <span className="w-px h-5 bg-white/[0.1]" />
-            <a
-              href={LOGIN_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[0.875rem] font-bold text-white hover:text-white/80 transition-colors"
-            >
-              Log in
-            </a>
-            <a
-              href={SIGNUP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full bg-white px-4 py-1.5 text-[0.875rem] font-bold text-black hover:bg-white/90 active:scale-[0.97] transition-all duration-150"
-            >
-              Sign up
-            </a>
-          </div>
-        </div>
+      <TopNav
+        isRunning={isRunning}
+        isRefreshing={refreshing}
+        lastFetched={lastFetched}
+        onRefresh={handleRefresh}
+      />
 
-        {/* Content area */}
+      <main className="w-full max-w-[1400px] mx-auto px-3">
         {loading ? (
           <SkeletonFeed />
         ) : fetchError ? (
-          <ErrorState error={fetchError} onRetry={() => { setLoading(true); fetchStories(); }} />
+          <ErrorState
+            error={fetchError}
+            onRetry={() => { setLoading(true); fetchStories(); }}
+          />
         ) : !hasContent ? (
           <EmptyState isRunning={isRunning} />
         ) : (
-          <>
-            <HeroStory story={data!.headlineStory!} />
+          <div className="grid grid-cols-[minmax(0,1fr)_260px]">
+            {/* ── Main content ── */}
+            <div className="min-w-0">
+              {/* Hero */}
+              <HeroStory story={data!.headlineStory!} />
 
-            {/* Visible story cards */}
-            {visibleStories.length > 0 && (
-              <div>
-                <div className="px-6 py-3 border-b border-white/[0.08]">
-                  <span className="text-[0.6875rem] font-semibold tracking-[0.12em] uppercase text-[#71767b]">
-                    More stories
-                  </span>
-                </div>
-                {visibleStories.map((story, i) => (
-                  <StoryCard key={story.id} story={story} index={i} />
+              {/* Section header */}
+              <div className="flex items-center gap-2.5 px-6 py-4 border-b border-white/8">
+                <span className="text-[0.6875rem] font-semibold tracking-[0.14em] uppercase text-[#71767b]">
+                  More stories
+                </span>
+                <LiveIndicator isRunning={isRunning} />
+              </div>
+
+              {/* Two-column story grid */}
+              <div className="grid grid-cols-2">
+                {allStories.map((story, i) => (
+                  <StoryGridItem
+                    key={story.id}
+                    story={story}
+                    index={i}
+                    isOdd={i % 2 !== 0}
+                    showCtaAfter={i === CTA_AFTER - 1}
+                  />
                 ))}
               </div>
-            )}
 
-            {/* FOMO gate — blurred stories + conversion overlay */}
-            {hiddenCount > 0 && <FeedGate remainingCount={hiddenCount} />}
+              <div className="h-16" />
+            </div>
 
-            <div className="h-20" />
-          </>
+            {/* ── Right sidebar ── */}
+            <div className="sticky top-14 h-[calc(100vh-56px)] overflow-y-auto border-l border-white/8 min-w-0">
+              <RightPanel
+                status={data?.status ?? null}
+                stories={allStories}
+                headlineStory={data?.headlineStory ?? null}
+              />
+            </div>
+          </div>
         )}
-      </div>
+      </main>
+    </>
+  );
+}
 
-      <RightRail
-        status={data?.status ?? null}
-        stories={data?.stories ?? []}
-        headlineStory={data?.headlineStory ?? null}
-        lastFetched={lastFetched}
-      />
+// ─── Grid item wrapper ───────────────────────────────────────────────────────
+
+function StoryGridItem({
+  story,
+  index,
+  isOdd,
+  showCtaAfter,
+}: {
+  story: Story;
+  index: number;
+  isOdd: boolean;
+  showCtaAfter: boolean;
+}) {
+  return (
+    <>
+      <div className={isOdd ? '' : 'border-r border-white/8'}>
+        <StoryCard story={story} index={index} />
+      </div>
+      {showCtaAfter && <InlineCta />}
     </>
   );
 }

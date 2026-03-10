@@ -1,4 +1,5 @@
 import { Story } from './types';
+import { CACHE_TTL_MS } from './config';
 
 interface CacheState {
   stories: Story[];
@@ -35,4 +36,9 @@ export function setStories(stories: Story[]): void {
 export function getCacheAgeMs(): number | null {
   if (!cache.updatedAt) return null;
   return Date.now() - cache.updatedAt.getTime();
+}
+
+export function isCacheValid(): boolean {
+  const age = getCacheAgeMs();
+  return age !== null && age < CACHE_TTL_MS;
 }

@@ -1,8 +1,14 @@
 import { getOrInitPipeline } from '@/lib/pipeline';
-import { getStories, cache, getCacheAgeMs } from '@/lib/cache';
+import { getStories, cache, getCacheAgeMs, isCacheValid } from '@/lib/cache';
 
 export async function GET() {
-  getOrInitPipeline();
+  const pipeline = getOrInitPipeline();
+
+  if (!isCacheValid() && !cache.isRefreshing) {
+    // Cache is stale — kick off a background refresh but don't wait for it.
+    // The caller receives the existing (possibly empty) cache immediately.
+    pipeline.run();
+  }
 
   const stories = getStories();
   const [headlineStory = null, ...supportingStories] = stories;
