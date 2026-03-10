@@ -27,13 +27,13 @@ export function TopNav({ isRunning, isRefreshing, lastFetched, onRefresh }: Prop
     <nav className="sticky top-0 z-30 h-14 border-b border-white/8 bg-black/92 backdrop-blur-md">
       <div className="max-w-[1400px] mx-auto h-full flex items-center px-4">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center shrink-0 overflow-hidden">
+          <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden">
             <Image
               src="/new-2023-twitter-logo-x-icon-design_1017-45418.avif"
               alt="X"
-              width={20}
-              height={20}
-              className="object-contain"
+              width={32}
+              height={32}
+              className="object-cover"
               priority
             />
           </div>

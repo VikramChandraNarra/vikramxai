@@ -42,7 +42,7 @@ interface XSearchResponse {
   };
 }
 
-async function searchTweets(query: string, maxResults: number): Promise<Tweet[]> {
+async function searchTweets(query: string, maxResults: number, category: string): Promise<Tweet[]> {
   const bearerToken = process.env.X_BEARER_TOKEN;
   if (!bearerToken) {
     throw new Error('X_BEARER_TOKEN environment variable not set');
@@ -73,7 +73,6 @@ async function searchTweets(query: string, maxResults: number): Promise<Tweet[]>
     return [];
   }
 
-  // Build lookup maps from the includes
   const userMap = new Map<string, XUserData>();
   for (const user of data.includes?.users ?? []) {
     userMap.set(user.id, user);
@@ -106,19 +105,41 @@ async function searchTweets(query: string, maxResults: number): Promise<Tweet[]>
       replyCount: t.public_metrics?.reply_count ?? 0,
       impressionCount: t.public_metrics?.impression_count ?? 0,
       media: media.length > 0 ? media : undefined,
+      category,
     };
   });
 }
 
-export async function ingestTweets(queries: string[], maxResultsPerQuery: number): Promise<Tweet[]> {
-  const results = await Promise.allSettled(
-    queries.map((q) => searchTweets(q, maxResultsPerQuery))
-  );
-
+// Accepts the full STORY_BUCKETS map. Each bucket's queries are run in parallel;
+// tweets are tagged with their bucket name. Duplicates across buckets are dropped
+// (first bucket encountered wins the category assignment).
+export async function ingestTweets(
+  buckets: Record<string, string[]>,
+  maxResultsPerQuery: number
+): Promise<Tweet[]> {
   const tweets: Tweet[] = [];
   const seenIds = new Set<string>();
 
-  for (const result of results) {
+  // Run all buckets concurrently; within each bucket run queries concurrently.
+  const bucketEntries = Object.entries(buckets);
+  const bucketResults = await Promise.allSettled(
+    bucketEntries.map(async ([category, queries]) => {
+      const queryResults = await Promise.allSettled(
+        queries.map((q) => searchTweets(q, maxResultsPerQuery, category))
+      );
+      const bucketTweets: Tweet[] = [];
+      for (const result of queryResults) {
+        if (result.status === 'fulfilled') {
+          bucketTweets.push(...result.value);
+        } else {
+          console.error(`[ingest] query failed (${category}):`, result.reason);
+        }
+      }
+      return bucketTweets;
+    })
+  );
+
+  for (const result of bucketResults) {
     if (result.status === 'fulfilled') {
       for (const tweet of result.value) {
         if (!seenIds.has(tweet.id)) {
@@ -127,7 +148,7 @@ export async function ingestTweets(queries: string[], maxResultsPerQuery: number
         }
       }
     } else {
-      console.error('[ingest] query failed:', result.reason);
+      console.error('[ingest] bucket failed:', result.reason);
     }
   }
 

@@ -1,5 +1,5 @@
 import { Story } from '@/lib/types';
-import { formatNum, timeAgo, getStoryLabel } from '@/lib/utils';
+import { formatNum, timeAgo, getStoryLabel, getCategoryStyle } from '@/lib/utils';
 import { SourcesStrip } from './SourcesStrip';
 import {
   RiFlashlightFill,
@@ -15,6 +15,7 @@ interface Props {
 
 export function HeroStory({ story }: Props) {
   const label = getStoryLabel(story);
+  const categoryStyle = getCategoryStyle(story.category);
   const searchUrl = `https://x.com/search?q=${encodeURIComponent(story.headline)}&src=typed_query&f=live`;
 
   // Surface the first photo from any representative tweet
@@ -37,14 +38,21 @@ export function HeroStory({ story }: Props) {
       )}
 
       <div className="px-7 pt-7 pb-8 border-b border-white/[0.08]">
-        {/* Label + timestamp */}
+        {/* Label + Category + timestamp */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${label.dotClass}`} />
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${label.dotClass}`} />
+              <span
+                className={`text-[0.625rem] font-semibold tracking-[0.16em] uppercase ${label.textClass}`}
+              >
+                {label.text}
+              </span>
+            </div>
             <span
-              className={`text-[0.625rem] font-semibold tracking-[0.16em] uppercase ${label.textClass}`}
+              className={`px-2 py-0.5 rounded-full text-[0.625rem] font-semibold tracking-wide uppercase ${categoryStyle.bgClass} ${categoryStyle.textClass}`}
             >
-              {label.text}
+              {categoryStyle.label}
             </span>
           </div>
           <span className="text-[0.6875rem] text-[#71767b]">{timeAgo(story.generatedAt)}</span>

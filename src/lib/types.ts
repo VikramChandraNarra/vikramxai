@@ -19,6 +19,7 @@ export interface Tweet {
   embedding?: number[];
   normalizedText?: string;
   entities?: { hashtags: string[]; urls: string[] };
+  category?: string;
 }
 
 export interface TweetPreview {
@@ -40,6 +41,7 @@ export interface ScoredCluster {
   totalEngagement: number;
   velocity: number;
   uniqueAuthors: number;
+  category: string;
 }
 
 export interface Story {
@@ -54,6 +56,7 @@ export interface Story {
   uniqueAuthors: number;
   clusterSize: number;
   generatedAt: string;
+  category: string;
 }
 
 export interface PipelineStatus {

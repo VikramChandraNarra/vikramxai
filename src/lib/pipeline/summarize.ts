@@ -38,9 +38,11 @@ async function summarizeCluster(cluster: ScoredCluster, isHeadline: boolean): Pr
   const reps = selectRepresentativeTweets(cluster);
   const tweetLines = reps.map((t) => `@${t.authorUsername}: ${t.text}`).join('\n');
 
-  const text = await callOpenAI(`You are a news editor. Given these tweets about the same developing story, write:
+  const text = await callOpenAI(`You are a careful news editor. Given these tweets about the same developing story, write:
 1. A specific, punchy headline (under 12 words, no clickbait)
 2. A 2-sentence factual summary covering who, what, and why it matters
+
+Important: If the tweets describe an unverified claim or rumor rather than confirmed facts, phrase the headline carefully using wording like "Users on X claim..." or "Reports suggest..." instead of presenting it as confirmed fact.
 
 Tweets:
 ${tweetLines}
@@ -86,6 +88,7 @@ Respond with valid JSON only: {"headline": "...", "summary": "..."}`);
     uniqueAuthors: cluster.uniqueAuthors,
     clusterSize: cluster.tweets.length,
     generatedAt: new Date().toISOString(),
+    category: cluster.category,
   };
 }
 

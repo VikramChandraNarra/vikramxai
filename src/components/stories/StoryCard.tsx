@@ -1,5 +1,5 @@
 import { Story } from '@/lib/types';
-import { formatNum, timeAgo, getStoryLabel } from '@/lib/utils';
+import { formatNum, timeAgo, getStoryLabel, getCategoryStyle } from '@/lib/utils';
 import { TweetSnippet } from './TweetSnippet';
 import { RiFlashlightFill, RiGroupFill, RiArrowRightUpLine } from 'react-icons/ri';
 import { FaXTwitter } from 'react-icons/fa6';
@@ -11,6 +11,7 @@ interface Props {
 
 export function StoryCard({ story, index }: Props) {
   const label = getStoryLabel(story);
+  const categoryStyle = getCategoryStyle(story.category);
   const searchUrl = `https://x.com/search?q=${encodeURIComponent(story.headline)}&src=typed_query&f=live`;
 
   return (
@@ -18,12 +19,19 @@ export function StoryCard({ story, index }: Props) {
       className="px-6 py-5 border-b border-white/[0.08] hover:bg-white/[0.025] transition-colors duration-150 animate-fade-in-up"
       style={{ animationDelay: `${index * 55}ms` }}
     >
-      {/* Label + time */}
+      {/* Label + Category + time */}
       <div className="flex items-center justify-between mb-2.5">
-        <div className="flex items-center gap-1.5">
-          <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${label.dotClass}`} />
-          <span className={`text-[0.6875rem] font-semibold tracking-[0.12em] uppercase ${label.textClass}`}>
-            {label.text}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${label.dotClass}`} />
+            <span className={`text-[0.6875rem] font-semibold tracking-[0.12em] uppercase ${label.textClass}`}>
+              {label.text}
+            </span>
+          </div>
+          <span
+            className={`px-1.5 py-0.5 rounded-full text-[0.5625rem] font-semibold tracking-wide uppercase ${categoryStyle.bgClass} ${categoryStyle.textClass}`}
+          >
+            {categoryStyle.label}
           </span>
         </div>
         <span className="text-[0.75rem] text-[#71767b]">{timeAgo(story.generatedAt)}</span>

@@ -262,18 +262,31 @@ export function StoriesPageClient() {
                 <LiveIndicator isRunning={isRunning} />
               </div>
 
-              {/* Two-column story grid */}
+              {/* Two-column story grid — visible stories */}
               <div className="grid grid-cols-2">
-                {allStories.map((story, i) => (
-                  <StoryGridItem
-                    key={story.id}
-                    story={story}
-                    index={i}
-                    isOdd={i % 2 !== 0}
-                    showCtaAfter={i === CTA_AFTER - 1}
-                  />
+                {allStories.slice(0, CTA_AFTER).map((story, i) => (
+                  <div key={story.id} className={i % 2 === 0 ? 'border-r border-white/8' : ''}>
+                    <StoryCard story={story} index={i} />
+                  </div>
                 ))}
               </div>
+
+              {/* Fade-out teaser + CTA */}
+              {allStories.length > CTA_AFTER && (
+                <div className="relative">
+                  <div className="grid grid-cols-2 overflow-hidden max-h-[420px]">
+                    {allStories.slice(CTA_AFTER, CTA_AFTER + 4).map((story, i) => (
+                      <div key={story.id} className={i % 2 === 0 ? 'border-r border-white/8' : ''}>
+                        <StoryCard story={story} index={CTA_AFTER + i} />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="absolute inset-0 pointer-events-none bg-linear-to-b from-transparent via-black/70 to-black" />
+                  <div className="relative -mt-4">
+                    <InlineCta />
+                  </div>
+                </div>
+              )}
 
               <div className="h-16" />
             </div>
@@ -293,25 +306,3 @@ export function StoriesPageClient() {
   );
 }
 
-// ─── Grid item wrapper ───────────────────────────────────────────────────────
-
-function StoryGridItem({
-  story,
-  index,
-  isOdd,
-  showCtaAfter,
-}: {
-  story: Story;
-  index: number;
-  isOdd: boolean;
-  showCtaAfter: boolean;
-}) {
-  return (
-    <>
-      <div className={isOdd ? '' : 'border-r border-white/8'}>
-        <StoryCard story={story} index={index} />
-      </div>
-      {showCtaAfter && <InlineCta />}
-    </>
-  );
-}

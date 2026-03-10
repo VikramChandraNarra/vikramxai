@@ -41,3 +41,25 @@ export function getStoryLabel(story: {
     return { text: 'Rising', dotClass: 'bg-violet-400', textClass: 'text-violet-400' };
   return { text: 'Developing', dotClass: 'bg-[#71767b]', textClass: 'text-[#71767b]' };
 }
+
+export type StoryCategory = 'ai' | 'technology' | 'politics' | 'business' | 'culture' | 'breaking' | 'general';
+
+export interface CategoryStyle {
+  label: string;
+  bgClass: string;
+  textClass: string;
+}
+
+const CATEGORY_STYLES: Record<StoryCategory, CategoryStyle> = {
+  ai: { label: 'AI', bgClass: 'bg-violet-500/15', textClass: 'text-violet-400' },
+  technology: { label: 'Tech', bgClass: 'bg-cyan-500/15', textClass: 'text-cyan-400' },
+  politics: { label: 'Politics', bgClass: 'bg-orange-500/15', textClass: 'text-orange-400' },
+  business: { label: 'Business', bgClass: 'bg-emerald-500/15', textClass: 'text-emerald-400' },
+  culture: { label: 'Culture', bgClass: 'bg-pink-500/15', textClass: 'text-pink-400' },
+  breaking: { label: 'Breaking', bgClass: 'bg-red-500/15', textClass: 'text-red-400' },
+  general: { label: 'General', bgClass: 'bg-slate-500/15', textClass: 'text-slate-400' },
+};
+
+export function getCategoryStyle(category: string): CategoryStyle {
+  return CATEGORY_STYLES[category as StoryCategory] ?? CATEGORY_STYLES.general;
+}
