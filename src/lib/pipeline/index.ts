@@ -13,6 +13,9 @@ import { embedTweets } from './embed';
 import { clusterTweets } from './cluster';
 import { scoreAndRank } from './rank';
 import { summarizeClusters } from './summarize';
+import { MOCK_STORIES } from './mock-data';
+
+const USE_MOCK = process.env.USE_MOCK_DATA === 'true';
 
 class Pipeline {
   async run(): Promise<void> {
@@ -21,6 +24,15 @@ class Pipeline {
     cache.lastRunAt = new Date();
 
     try {
+      if (USE_MOCK) {
+        console.log('[Pipeline] Mock mode — loading mock stories');
+        setStories(MOCK_STORIES);
+        cache.lastSuccessfulRunAt = new Date();
+        cache.error = null;
+        console.log(`[Pipeline] Loaded ${MOCK_STORIES.length} mock stories`);
+        return;
+      }
+
       console.log('[Pipeline] Starting run...');
       const tweets = await ingestTweets(SEARCH_QUERIES, MAX_RESULTS_PER_QUERY);
       console.log(`[Pipeline] Ingested ${tweets.length} tweets`);

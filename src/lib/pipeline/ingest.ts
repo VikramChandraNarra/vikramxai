@@ -1,4 +1,4 @@
-import { Tweet } from '../types';
+import { Tweet, TweetMedia } from '../types';
 
 interface XTweetData {
   id: string;
@@ -11,17 +11,30 @@ interface XTweetData {
     reply_count: number;
     impression_count: number;
   };
+  attachments?: {
+    media_keys?: string[];
+  };
 }
 
 interface XUserData {
   id: string;
   username: string;
+  name: string;
+  profile_image_url?: string;
+}
+
+interface XMediaData {
+  media_key: string;
+  type: 'photo' | 'video' | 'animated_gif';
+  url?: string;          // present for photos
+  preview_image_url?: string; // present for videos/gifs
 }
 
 interface XSearchResponse {
   data?: XTweetData[];
   includes?: {
     users?: XUserData[];
+    media?: XMediaData[];
   };
   meta?: {
     result_count: number;
@@ -38,9 +51,10 @@ async function searchTweets(query: string, maxResults: number): Promise<Tweet[]>
   const params = new URLSearchParams({
     query,
     max_results: String(Math.min(maxResults, 100)),
-    'tweet.fields': 'author_id,created_at,public_metrics',
-    'user.fields': 'username',
-    expansions: 'author_id',
+    'tweet.fields': 'author_id,created_at,public_metrics,attachments',
+    'user.fields': 'username,name,profile_image_url',
+    'media.fields': 'url,preview_image_url,type',
+    expansions: 'author_id,attachments.media_keys',
   });
 
   const url = `https://api.twitter.com/2/tweets/search/recent?${params}`;
@@ -59,22 +73,41 @@ async function searchTweets(query: string, maxResults: number): Promise<Tweet[]>
     return [];
   }
 
-  const userMap = new Map<string, string>();
+  // Build lookup maps from the includes
+  const userMap = new Map<string, XUserData>();
   for (const user of data.includes?.users ?? []) {
-    userMap.set(user.id, user.username);
+    userMap.set(user.id, user);
   }
 
-  return data.data.map((t) => ({
-    id: t.id,
-    text: t.text,
-    authorId: t.author_id,
-    authorUsername: userMap.get(t.author_id) ?? t.author_id,
-    createdAt: new Date(t.created_at),
-    likeCount: t.public_metrics?.like_count ?? 0,
-    retweetCount: t.public_metrics?.retweet_count ?? 0,
-    replyCount: t.public_metrics?.reply_count ?? 0,
-    impressionCount: t.public_metrics?.impression_count ?? 0,
-  }));
+  const mediaMap = new Map<string, TweetMedia>();
+  for (const m of data.includes?.media ?? []) {
+    const imageUrl = m.type === 'photo' ? m.url : m.preview_image_url;
+    if (imageUrl) {
+      mediaMap.set(m.media_key, { url: imageUrl, type: m.type });
+    }
+  }
+
+  return data.data.map((t) => {
+    const user = userMap.get(t.author_id);
+    const media = (t.attachments?.media_keys ?? [])
+      .map((key) => mediaMap.get(key))
+      .filter((m): m is TweetMedia => m !== undefined);
+
+    return {
+      id: t.id,
+      text: t.text,
+      authorId: t.author_id,
+      authorUsername: user?.username ?? t.author_id,
+      authorDisplayName: user?.name,
+      authorProfileImageUrl: user?.profile_image_url,
+      createdAt: new Date(t.created_at),
+      likeCount: t.public_metrics?.like_count ?? 0,
+      retweetCount: t.public_metrics?.retweet_count ?? 0,
+      replyCount: t.public_metrics?.reply_count ?? 0,
+      impressionCount: t.public_metrics?.impression_count ?? 0,
+      media: media.length > 0 ? media : undefined,
+    };
+  });
 }
 
 export async function ingestTweets(queries: string[], maxResultsPerQuery: number): Promise<Tweet[]> {

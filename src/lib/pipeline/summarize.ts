@@ -65,9 +65,13 @@ Respond with valid JSON only: {"headline": "...", "summary": "..."}`);
     id: t.id,
     text: t.text,
     authorUsername: t.authorUsername,
+    authorDisplayName: t.authorDisplayName,
+    authorProfileImageUrl: t.authorProfileImageUrl,
     createdAt: t.createdAt.toISOString(),
     likeCount: t.likeCount,
     retweetCount: t.retweetCount,
+    replyCount: t.replyCount,
+    media: t.media,
   }));
 
   return {
