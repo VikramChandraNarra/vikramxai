@@ -70,9 +70,14 @@ export function TopNav({ isRunning, isRefreshing, isIngesting, lastFetched, onRe
             onClick={onRefresh}
             disabled={isRefreshing}
             aria-label="Refresh stories"
-            className="p-1.5 rounded-full hover:bg-white/8 text-[#71767b] hover:text-white transition-colors disabled:opacity-40"
+            className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[0.75rem] font-medium transition-all duration-200 ${
+              isRefreshing
+                ? 'bg-[#1d9bf0]/10 text-[#1d9bf0]'
+                : 'hover:bg-white/8 text-[#71767b] hover:text-white'
+            }`}
           >
-            <RiRefreshLine className={isRefreshing ? 'animate-spin' : ''} size={16} />
+            <RiRefreshLine className={isRefreshing ? 'animate-spin' : ''} size={14} />
+            {isRefreshing && <span>Updating</span>}
           </button>
           <span className="w-px h-4 bg-white/10" />
           <a

@@ -88,13 +88,14 @@ function MetricChip({ icon, value }: { icon: React.ReactNode; value: number }) {
 interface Props {
   tweet: TweetPreview;
   compact?: boolean;
+  hideMedia?: boolean;
 }
 
-function FullTweetCard({ tweet }: { tweet: TweetPreview }) {
+function FullTweetCard({ tweet, hideMedia }: { tweet: TweetPreview; hideMedia?: boolean }) {
   const tweetUrl = `https://x.com/${tweet.authorUsername}/status/${tweet.id}`;
   const profileUrl = `https://x.com/${tweet.authorUsername}`;
   const displayName = tweet.authorDisplayName || tweet.authorUsername;
-  const photoMedia = tweet.media?.find((m) => m.type === 'photo');
+  const photoMedia = hideMedia ? undefined : tweet.media?.find((m) => m.type === 'photo');
 
   return (
     <div className="group rounded-xl border border-white/[0.08] hover:border-white/[0.18] hover:bg-white/[0.025] transition-all duration-150 overflow-hidden">
@@ -238,7 +239,7 @@ function CompactTweetRow({ tweet }: { tweet: TweetPreview }) {
 
 // ─── Export ───────────────────────────────────────────────────────────────────
 
-export function TweetSnippet({ tweet, compact = false }: Props) {
+export function TweetSnippet({ tweet, compact = false, hideMedia = false }: Props) {
   if (compact) return <CompactTweetRow tweet={tweet} />;
-  return <FullTweetCard tweet={tweet} />;
+  return <FullTweetCard tweet={tweet} hideMedia={hideMedia} />;
 }

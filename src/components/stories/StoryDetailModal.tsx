@@ -201,9 +201,12 @@ export function StoryDetailModal({ story, onClose, storyIndex, totalStories, med
           <div className="px-7 pt-5">
             {/* Section header */}
             <div className="flex items-center gap-2 mb-4">
+              <span className="text-[0.6875rem] font-semibold tracking-[0.14em] uppercase text-[#71767b]">
+                From
+              </span>
               <FaXTwitter className="text-[#71767b]" size={12} />
               <span className="text-[0.6875rem] font-semibold tracking-[0.14em] uppercase text-[#71767b]">
-                From X conversations
+                conversations
               </span>
               <AvatarStack
                 tweets={story.representativeTweets}
@@ -216,27 +219,27 @@ export function StoryDetailModal({ story, onClose, storyIndex, totalStories, med
             {/* Visible tweets */}
             <div className="flex flex-col gap-3">
               {visibleTweets.map((tweet) => (
-                <TweetSnippet key={tweet.id} tweet={tweet} />
+                <TweetSnippet key={tweet.id} tweet={tweet} hideMedia />
               ))}
             </div>
 
             {/* ── Conversion gate ── */}
             {hasGate ? (
               <div className="relative mt-3">
-                {/* Blurred hidden tweets — decorative only */}
+                {/* Blurred hidden tweets — decorative only, just first 2 */}
                 <div
                   className="flex flex-col gap-3 select-none pointer-events-none"
                   aria-hidden="true"
                 >
-                  {hiddenTweets.map((tweet) => (
+                  {hiddenTweets.slice(0, 2).map((tweet) => (
                     <div key={tweet.id} className="blur-[5px] opacity-50">
-                      <TweetSnippet tweet={tweet} />
+                      <TweetSnippet tweet={tweet} hideMedia />
                     </div>
                   ))}
                 </div>
 
-                {/* Fade + CTA */}
-                <div className="absolute inset-0 flex flex-col items-center justify-end bg-gradient-to-b from-transparent via-black/75 to-black pb-8">
+                {/* Fade + CTA — pinned to top so it sits over the first blurred tweet */}
+                <div className="absolute inset-0 flex flex-col items-center justify-start pt-4 bg-gradient-to-b from-black/60 via-black/85 to-black">
                   <ConversionGate clusterSize={story.clusterSize} />
                 </div>
               </div>

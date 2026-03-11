@@ -98,6 +98,20 @@ export function getCategoryStyle(category: string): CategoryStyle {
   return CATEGORY_STYLES[category as StoryCategory] ?? CATEGORY_STYLES.general;
 }
 
+export function getFirstImage(tweets: Array<{ likeCount: number; retweetCount: number; replyCount?: number; media?: Array<{ url: string; type: string }> }>): string | null {
+  const sorted = [...tweets].sort((a, b) => {
+    const engA = a.likeCount + 3 * a.retweetCount + 2 * (a.replyCount ?? 0);
+    const engB = b.likeCount + 3 * b.retweetCount + 2 * (b.replyCount ?? 0);
+    return engB - engA;
+  });
+  for (const tweet of sorted) {
+    for (const m of tweet.media ?? []) {
+      if (m.url && m.type === 'photo') return m.url;
+    }
+  }
+  return null;
+}
+
 export function getBestTweetUrl(story: { headline: string; representativeTweets: Array<{ id: string; authorUsername: string }> }): string {
   const best = story.representativeTweets[0];
   if (best) return `https://x.com/${best.authorUsername}/status/${best.id}`;

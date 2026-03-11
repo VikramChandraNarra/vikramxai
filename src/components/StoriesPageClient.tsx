@@ -11,7 +11,8 @@ import { StoryCard } from '@/components/stories/StoryCard';
 import { StoryDetailModal } from '@/components/stories/StoryDetailModal';
 import { SkeletonFeed } from '@/components/ui/SkeletonFeed';
 import { LiveIndicator } from '@/components/ui/LiveIndicator';
-import { RiRefreshLine } from 'react-icons/ri';
+import { RiRefreshLine, RiArrowUpLine } from 'react-icons/ri';
+import { TweetPreview } from '@/lib/types';
 
 // ─── Splash screen ──────────────────────────────────────────────────────────
 
@@ -170,6 +171,62 @@ function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) 
   );
 }
 
+// ─── "New tweets" floating toast ─────────────────────────────────────────────
+
+function NewTweetsPill({
+  tweets,
+  visible,
+  onClick,
+}: {
+  tweets: TweetPreview[];
+  visible: boolean;
+  onClick: () => void;
+}) {
+  // Deduplicate authors and pick up to 3
+  const seen = new Set<string>();
+  const avatars: { username: string; src?: string }[] = [];
+  for (const t of tweets) {
+    const key = t.authorUsername.toLowerCase();
+    if (!seen.has(key) && avatars.length < 3) {
+      seen.add(key);
+      avatars.push({ username: t.authorUsername, src: t.authorProfileImageUrl });
+    }
+  }
+
+  if (avatars.length === 0) return null;
+
+  return (
+    <button
+      onClick={onClick}
+      className={`fixed top-[68px] left-1/2 -translate-x-1/2 z-35 flex items-center gap-2 rounded-full bg-[#1d9bf0] pl-3 pr-4 py-2 shadow-lg shadow-[#1d9bf0]/25 cursor-pointer transition-all duration-300 hover:bg-[#1a8cd8] active:scale-95 ${
+        visible
+          ? 'opacity-100 translate-y-0'
+          : 'opacity-0 -translate-y-4 pointer-events-none'
+      }`}
+    >
+      <RiArrowUpLine size={14} className="text-white" />
+      <div className="flex items-center -space-x-1.5">
+        {avatars.map((a) => (
+          <div
+            key={a.username}
+            className="h-[22px] w-[22px] rounded-full border-2 border-[#1d9bf0] bg-[#2a2a2a] overflow-hidden shrink-0"
+          >
+            {a.src ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={a.src} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <span className="flex items-center justify-center w-full h-full text-[0.5rem] font-bold text-white">
+                {a.username.slice(0, 1).toUpperCase()}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+      <span className="text-[0.8125rem] font-bold text-white">Tweeted</span>
+    </button>
+  );
+}
+
 // ─── Main page ───────────────────────────────────────────────────────────────
 
 export function StoriesPageClient() {
@@ -182,6 +239,10 @@ export function StoriesPageClient() {
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
   const [tick, setTick] = useState(0);
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
+  const [showTweetsPill, setShowTweetsPill] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const pillTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pillShownRef = useRef(false);
 
   useEffect(() => {
     const holdTimer = setTimeout(() => setSplash('exit'), 2000);
@@ -189,9 +250,10 @@ export function StoriesPageClient() {
     return () => { clearTimeout(holdTimer); clearTimeout(doneTimer); };
   }, []);
 
-  const fetchStories = useCallback(async () => {
+  const fetchStories = useCallback(async (shuffle = false) => {
     try {
-      const res = await fetch('/api/stories');
+      const url = shuffle ? '/api/stories?shuffle' : '/api/stories';
+      const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json: StoriesData = await res.json();
       setData(json);
@@ -205,15 +267,7 @@ export function StoriesPageClient() {
     }
   }, []);
 
-  const refreshPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const ingestPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const stopRefreshPoll = useCallback(() => {
-    if (refreshPollRef.current) {
-      clearInterval(refreshPollRef.current);
-      refreshPollRef.current = null;
-    }
-  }, []);
 
   const stopIngestPoll = useCallback(() => {
     if (ingestPollRef.current) {
@@ -229,38 +283,71 @@ export function StoriesPageClient() {
     return () => {
       clearInterval(pollTimer);
       clearInterval(tickTimer);
-      stopRefreshPoll();
       stopIngestPoll();
     };
-  }, [fetchStories, stopRefreshPoll, stopIngestPoll]);
+  }, [fetchStories, stopIngestPoll]);
+
+  // "New tweets" pill — appears after user scrolls past hero and stays 10s
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const pastHero = !entry.isIntersecting;
+        if (pastHero && !pillShownRef.current) {
+          // Start 10s timer when hero scrolls out of view
+          pillTimerRef.current = setTimeout(() => {
+            setShowTweetsPill(true);
+            pillShownRef.current = true;
+          }, 10_000);
+        } else if (!pastHero) {
+          // Hero is back in view — cancel timer, hide pill
+          if (pillTimerRef.current) {
+            clearTimeout(pillTimerRef.current);
+            pillTimerRef.current = null;
+          }
+          setShowTweetsPill(false);
+        }
+      },
+      { threshold: 0 },
+    );
+
+    observer.observe(hero);
+    return () => {
+      observer.disconnect();
+      if (pillTimerRef.current) clearTimeout(pillTimerRef.current);
+    };
+  }, [!!data?.headlineStory]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // refreshKey changes on every refresh — forces React to remount story
+  // components so entry animations replay, creating a "fresh feed" feel.
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [feedPhase, setFeedPhase] = useState<'visible' | 'out' | 'skeleton' | 'in'>('visible');
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    stopRefreshPoll();
-    try {
-      await fetch('/api/stories/refresh', { method: 'POST' });
-    } catch {
-      // ignore
-    }
 
-    refreshPollRef.current = setInterval(async () => {
-      try {
-        const res = await fetch('/api/stories');
-        if (!res.ok) return;
-        const json: StoriesData = await res.json();
-        setData(json);
-        setLastFetched(new Date());
-        setFetchError(null);
+    // Phase 1: fade out current content
+    setFeedPhase('out');
+    await new Promise((r) => setTimeout(r, 200));
 
-        if (!json.status?.isRunning) {
-          setRefreshing(false);
-          stopRefreshPoll();
-        }
-      } catch {
-        // keep polling
-      }
-    }, REFRESH_POLL_MS);
-  }, [stopRefreshPoll]);
+    // Phase 2: brief skeleton shimmer (perception of loading)
+    setFeedPhase('skeleton');
+    const fetchPromise = fetchStories(true);
+    await Promise.all([fetchPromise, new Promise((r) => setTimeout(r, 400))]);
+
+    // Phase 3: scroll to top + bump key to remount (replays stagger animations)
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    setShowTweetsPill(false);
+    pillShownRef.current = false;
+    setRefreshKey((k) => k + 1);
+    setFeedPhase('in');
+    setRefreshing(false);
+
+    // Reset phase after entrance animation completes
+    setTimeout(() => setFeedPhase('visible'), 500);
+  }, [fetchStories]);
 
   const handleIngest = useCallback(async () => {
     setIngesting(true);
@@ -324,6 +411,18 @@ export function StoriesPageClient() {
         onIngest={handleIngest}
       />
 
+      {/* "New tweets" pill — appears after scrolling past hero for 10s */}
+      {data?.headlineStory && (
+        <NewTweetsPill
+          tweets={data.headlineStory.representativeTweets}
+          visible={showTweetsPill}
+          onClick={() => {
+            setShowTweetsPill(false);
+            handleRefresh();
+          }}
+        />
+      )}
+
       <main className="w-full max-w-[1400px] mx-auto px-3">
         {loading ? (
           <SkeletonFeed />
@@ -334,17 +433,26 @@ export function StoriesPageClient() {
           />
         ) : !hasContent ? (
           <EmptyState isRunning={isRunning} />
+        ) : feedPhase === 'skeleton' ? (
+          <SkeletonFeed />
         ) : (
-          <div className="grid grid-cols-[minmax(0,1fr)_260px]">
+          <div
+            key={refreshKey}
+            className={`grid grid-cols-[minmax(0,1fr)_260px] transition-opacity duration-200 ${
+              feedPhase === 'out' ? 'opacity-0' : 'opacity-100'
+            }`}
+          >
             {/* ── Main content ── */}
             <div className="min-w-0">
               {/* Hero */}
-              <HeroStory
-                story={data!.headlineStory!}
-                onClick={() => setSelectedStory(data!.headlineStory!)}
-                totalStories={totalStories}
-                medianVelocity={medianVelocity}
-              />
+              <div ref={heroRef}>
+                <HeroStory
+                  story={data!.headlineStory!}
+                  onClick={() => setSelectedStory(data!.headlineStory!)}
+                  totalStories={totalStories}
+                  medianVelocity={medianVelocity}
+                />
+              </div>
 
               {/* Section header */}
               <div className="flex items-center gap-2.5 px-6 py-4 border-b border-white/8">

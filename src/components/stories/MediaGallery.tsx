@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { TweetPreview, TweetMedia } from '@/lib/types';
 import { RiArrowLeftSLine, RiArrowRightSLine } from 'react-icons/ri';
 
@@ -40,13 +40,24 @@ export function MediaGallery({ tweets, maxImages = 8 }: MediaGalleryProps) {
 
   const visible = media.slice(0, maxImages);
 
+  if (visible.length === 1) {
+    return (
+      <div className="mt-4 flex justify-center rounded-xl bg-white/[0.03]" onClick={(e) => e.stopPropagation()}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={visible[0].url}
+          alt=""
+          className="max-w-full max-h-[500px] w-auto h-auto rounded-xl"
+        />
+      </div>
+    );
+  }
+
   return <Slideshow media={visible} />;
 }
 
 function Slideshow({ media }: { media: RankedMedia[] }) {
   const [current, setCurrent] = useState(0);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const autoRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const count = media.length;
 
@@ -55,46 +66,20 @@ function Slideshow({ media }: { media: RankedMedia[] }) {
     setCurrent(next);
   }, [count]);
 
-  const resetAuto = useCallback(() => {
-    if (autoRef.current) clearInterval(autoRef.current);
-    autoRef.current = setInterval(() => setCurrent((c) => (c + 1) % count), 5000);
-  }, [count]);
-
-  useEffect(() => {
-    resetAuto();
-    return () => { if (autoRef.current) clearInterval(autoRef.current); };
-  }, [resetAuto]);
-
   const handlePrev = (e: React.MouseEvent) => {
     e.stopPropagation();
     goTo(current - 1);
-    resetAuto();
   };
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
     goTo(current + 1);
-    resetAuto();
   };
 
   const handleDot = (e: React.MouseEvent, i: number) => {
     e.stopPropagation();
     goTo(i);
-    resetAuto();
   };
-
-  if (count === 1) {
-    return (
-      <div className="mt-4 rounded-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={media[0].url}
-          alt=""
-          className="w-full h-auto max-h-[400px] object-cover"
-        />
-      </div>
-    );
-  }
 
   return (
     <div
@@ -103,17 +88,16 @@ function Slideshow({ media }: { media: RankedMedia[] }) {
     >
       {/* Slide track */}
       <div
-        ref={trackRef}
         className="flex transition-transform duration-500 ease-out"
         style={{ transform: `translateX(-${current * 100}%)` }}
       >
         {media.map((m, i) => (
-          <div key={i} className="w-full shrink-0">
+          <div key={i} className="w-full shrink-0 flex justify-center bg-white/[0.03]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={m.url}
               alt=""
-              className="w-full h-auto max-h-[400px] object-cover"
+              className="max-w-full max-h-[500px] w-auto h-auto"
             />
           </div>
         ))}

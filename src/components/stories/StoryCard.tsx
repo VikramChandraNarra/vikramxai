@@ -1,7 +1,7 @@
 'use client';
 
 import { Story } from '@/lib/types';
-import { timeAgo, getStoryLabel, getCategoryStyle, getBestTweetUrl, getHeroStat } from '@/lib/utils';
+import { timeAgo, getStoryLabel, getCategoryStyle, getBestTweetUrl, getHeroStat, getFirstImage } from '@/lib/utils';
 import { TweetSnippet } from './TweetSnippet';
 import { HeroStatIcon } from './HeroStatIcon';
 import { RiArrowRightUpLine } from 'react-icons/ri';
@@ -21,6 +21,7 @@ export function StoryCard({ story, index, onClick, totalStories, medianVelocity 
   const categoryStyle = getCategoryStyle(story.category);
   const tweetUrl = getBestTweetUrl(story);
   const heroStat = getHeroStat(story);
+  const firstImage = getFirstImage(story.representativeTweets);
 
   return (
     <article
@@ -46,15 +47,28 @@ export function StoryCard({ story, index, onClick, totalStories, medianVelocity 
         <span className="text-[0.75rem] text-[#71767b]">{timeAgo(story.generatedAt)}</span>
       </div>
 
-      {/* Headline */}
-      <h2 className="text-[1.0625rem] font-bold leading-[1.3] tracking-[-0.015em] text-white mb-2">
-        {story.headline}
-      </h2>
+      {/* Headline + image + summary (float wraps content around image) */}
+      <div>
+        {firstImage && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={firstImage}
+            alt=""
+            className="float-right ml-4 mb-2 rounded-lg max-w-[100px] max-h-[120px] w-auto h-auto"
+            onClick={(e) => e.stopPropagation()}
+          />
+        )}
 
-      {/* Summary */}
-      <p className="text-[0.875rem] text-[#71767b] leading-[1.55] line-clamp-2 mb-3">
-        {story.summary}
-      </p>
+        {/* Headline */}
+        <h2 className="text-[1.0625rem] font-bold leading-[1.3] tracking-[-0.015em] text-white mb-2">
+          {story.headline}
+        </h2>
+
+        {/* Summary */}
+        <p className="text-[0.875rem] text-[#71767b] leading-[1.55] line-clamp-2 mb-3">
+          {story.summary}
+        </p>
+      </div>
 
       {/* Compact tweet snippet */}
       {story.representativeTweets[0] && (

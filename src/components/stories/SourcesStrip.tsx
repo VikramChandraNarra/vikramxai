@@ -30,7 +30,7 @@ export function SourcesStrip({ tweets }: Props) {
       <div className="flex items-center gap-2 mb-2.5">
         <FaXTwitter size={11} className="text-[#71767b]" />
         <span className="text-[0.625rem] font-semibold tracking-[0.14em] uppercase text-[#71767b]">
-          From X conversations
+          From {tweets.length} {tweets.length === 1 ? 'post' : 'posts'} on X
         </span>
       </div>
 

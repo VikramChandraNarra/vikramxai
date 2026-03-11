@@ -1,10 +1,9 @@
 'use client';
 
 import { Story } from '@/lib/types';
-import { formatNum, timeAgo, getStoryLabel, getCategoryStyle, getBestTweetUrl, getHeroStat } from '@/lib/utils';
+import { formatNum, timeAgo, getStoryLabel, getCategoryStyle, getBestTweetUrl, getHeroStat, getFirstImage } from '@/lib/utils';
 import { SourcesStrip } from './SourcesStrip';
 import { HeroStatIcon } from './HeroStatIcon';
-import { MediaGallery } from './MediaGallery';
 import {
   RiBarChartHorizontalFill,
   RiArrowRightUpLine,
@@ -56,19 +55,33 @@ export function HeroStory({ story, onClick, totalStories, medianVelocity }: Prop
           {story.headline}
         </h1>
 
-        {/* Summary */}
-        <p className="text-[1.0625rem] text-[#e7e9ea] leading-[1.7] mb-2">
-          {story.summary}
-        </p>
+        {/* Summary + image flow (float lets content wrap around the image) */}
+        <div>
+          {(() => {
+            const firstImage = getFirstImage(story.representativeTweets);
+            if (firstImage) {
+              return (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={firstImage}
+                  alt=""
+                  className="float-right ml-6 mb-4 rounded-xl max-w-[280px] max-h-[320px] w-auto h-auto"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              );
+            }
+            return null;
+          })()}
 
-        {/* Media slideshow — right after summary */}
-        <MediaGallery tweets={story.representativeTweets} />
+          <p className="text-[1.0625rem] text-[#e7e9ea] leading-[1.7] mb-2">
+            {story.summary}
+          </p>
 
-        {/* Sources from X */}
-        <SourcesStrip tweets={story.representativeTweets} />
+          <SourcesStrip tweets={story.representativeTweets} />
+        </div>
 
         {/* Metrics row */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-6">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-6 clear-both">
           <div className="flex items-center gap-1.5">
             <RiBarChartHorizontalFill className="text-[#71767b]" size={12} />
             <span className="text-[0.75rem] text-[#71767b]">
