@@ -1,7 +1,7 @@
 'use client';
 
 import { Story } from '@/lib/types';
-import { formatNum, timeAgo, getStoryLabel, getCategoryStyle } from '@/lib/utils';
+import { formatNum, timeAgo, getStoryLabel, getCategoryStyle, getBestTweetUrl } from '@/lib/utils';
 import { TweetSnippet } from './TweetSnippet';
 import { RiFlashlightFill, RiArrowRightUpLine } from 'react-icons/ri';
 import { AvatarStack } from '@/components/ui/AvatarStack';
@@ -16,7 +16,7 @@ interface Props {
 export function StoryCard({ story, index, onClick }: Props) {
   const label = getStoryLabel(story);
   const categoryStyle = getCategoryStyle(story.category);
-  const searchUrl = `https://x.com/search?q=${encodeURIComponent(story.headline)}&src=typed_query&f=live`;
+  const tweetUrl = getBestTweetUrl(story);
 
   return (
     <article
@@ -74,7 +74,7 @@ export function StoryCard({ story, index, onClick }: Props) {
         <span className="text-[0.75rem] text-[#71767b]">{story.clusterSize} tweets</span>
 
         <a
-          href={searchUrl}
+          href={tweetUrl}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}

@@ -63,3 +63,9 @@ const CATEGORY_STYLES: Record<StoryCategory, CategoryStyle> = {
 export function getCategoryStyle(category: string): CategoryStyle {
   return CATEGORY_STYLES[category as StoryCategory] ?? CATEGORY_STYLES.general;
 }
+
+export function getBestTweetUrl(story: { headline: string; representativeTweets: Array<{ id: string; authorUsername: string }> }): string {
+  const best = story.representativeTweets[0];
+  if (best) return `https://x.com/${best.authorUsername}/status/${best.id}`;
+  return `https://x.com/search?q=${encodeURIComponent(story.headline)}&src=typed_query&f=live`;
+}

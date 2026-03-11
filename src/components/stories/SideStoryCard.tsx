@@ -1,5 +1,5 @@
 import { Story } from '@/lib/types';
-import { formatNum, timeAgo, getStoryLabel } from '@/lib/utils';
+import { formatNum, timeAgo, getStoryLabel, getBestTweetUrl } from '@/lib/utils';
 import { RiFlashlightFill, RiGroupFill, RiArrowRightUpLine } from 'react-icons/ri';
 import { FaXTwitter } from 'react-icons/fa6';
 
@@ -10,7 +10,7 @@ interface Props {
 
 export function SideStoryCard({ story, index }: Props) {
   const label = getStoryLabel(story);
-  const searchUrl = `https://x.com/search?q=${encodeURIComponent(story.headline)}&src=typed_query&f=live`;
+  const tweetUrl = getBestTweetUrl(story);
 
   // Surface first photo from any representative tweet
   const heroPhoto = story.representativeTweets
@@ -68,7 +68,7 @@ export function SideStoryCard({ story, index }: Props) {
           <span className="text-[0.6875rem] text-[#71767b]">{story.uniqueAuthors}</span>
         </div>
         <a
-          href={searchUrl}
+          href={tweetUrl}
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}

@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { Story } from '@/lib/types';
-import { formatNum, timeAgo, getStoryLabel, getCategoryStyle } from '@/lib/utils';
+import { formatNum, timeAgo, getStoryLabel, getCategoryStyle, getBestTweetUrl } from '@/lib/utils';
 import { TweetSnippet } from './TweetSnippet';
 import { AvatarStack } from '@/components/ui/AvatarStack';
 import {
@@ -72,7 +72,7 @@ function ConversionGate({ clusterSize }: { clusterSize: number }) {
 export function StoryDetailModal({ story, onClose }: Props) {
   const label = getStoryLabel(story);
   const categoryStyle = getCategoryStyle(story.category);
-  const searchUrl = `https://x.com/search?q=${encodeURIComponent(story.headline)}&src=typed_query&f=live`;
+  const tweetUrl = getBestTweetUrl(story);
 
   // Close on Escape
   useEffect(() => {
@@ -189,7 +189,7 @@ export function StoryDetailModal({ story, onClose }: Props) {
               </div>
 
               <a
-                href={searchUrl}
+                href={tweetUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="ml-auto flex items-center gap-1.5 text-[0.8125rem] text-[#71767b] hover:text-white border border-white/[0.1] hover:border-white/[0.25] rounded-full px-3.5 py-1.5 transition-all duration-150 group"
