@@ -1,12 +1,12 @@
 # X Stories
 
-AI-curated news homepage for X.com — reimagining the logged-out experience.
+AI-curated news homepage for X.com - reimagining the logged-out experience.
 
 [![Watch the video](https://img.youtube.com/vi/KANHt7wC4iQ/maxresdefault.jpg)](https://youtu.be/KANHt7wC4iQ)
 
 ### [Watch this video on YouTube](https://youtu.be/KANHt7wC4iQ)
 
-**[Live Demo →](https://vikramxai.vercel.app)**
+**[https://vikramxai.vercel.app →](https://vikramxai.vercel.app)**
 
 
 
@@ -43,14 +43,14 @@ sequenceDiagram
 
 ## Pipeline
 
-1. **Ingest** — Fetch public posts from X across 7 topic buckets (breaking, AI, tech, politics, business, culture, nearby)
-2. **Preprocess** — Normalize text, deduplicate, extract hashtags and URLs
-3. **Embed** — Generate vector embeddings with OpenAI `text-embedding-3-small`
-4. **Cluster** — DBSCAN with cosine distance, then conservative URL/hashtag merge
-5. **Rank** — Weighted score across engagement, velocity, recency, and author diversity
-6. **Select** — Pick author-diverse representative posts per cluster
-7. **Summarize** — Generate headline + summary with GPT-4o-mini
-8. **Cache** — Persist to Redis with stale-while-revalidate serving
+1. **Ingest** - Fetch public posts from X across 7 topic buckets (breaking, AI, tech, politics, business, culture, nearby)
+2. **Preprocess** - Normalize text, deduplicate, extract hashtags and URLs
+3. **Embed** - Generate vector embeddings with OpenAI `text-embedding-3-small`
+4. **Cluster** - DBSCAN with cosine distance, then conservative URL/hashtag merge
+5. **Rank** - Weighted score across engagement, velocity, recency, and author diversity
+6. **Select** - Pick author-diverse representative posts per cluster
+7. **Summarize** - Generate headline + summary with GPT-4o-mini
+8. **Cache** - Persist to Redis with stale-while-revalidate serving
 
 ## Stack
 
@@ -72,16 +72,16 @@ sequenceDiagram
 
 ## Key Design Decisions
 
-- **Story-first, not feed-first** — Conversations are grouped into narratives rather than shown as a raw stream
-- **Cache-first serving** — Responses come from Redis; pipeline runs are fire-and-forget background tasks
-- **Source-grounded** — Every story links back to real X posts, not just AI-generated text
-- **Conversion-aware** — The logged-out experience complements the sign-up funnel with gated deeper exploration
+- **Story-first, not feed-first** - Conversations are grouped into narratives rather than shown as a raw stream
+- **Cache-first serving** - Responses come from Redis; pipeline runs are fire-and-forget background tasks
+- **Source-grounded** - Every story links back to real X posts, not just AI-generated text
+- **Conversion-aware** - The logged-out experience complements the sign-up funnel with gated deeper exploration
 
 ## Limitations
 
 - Nearby feed uses a hardcoded city instead of real user geolocation. This limits personalization and underestimates how much a location-based news feed can improve sign-up funnels.
 - Story IDs are not stable across pipeline runs (no deep linking yet).
-- Scheduling is single-process only — production would use a platform scheduler (e.g., Vercel Cron).
+- Scheduling is single-process only - production would use a platform scheduler (e.g., Vercel Cron).
 - DBSCAN is O(n²) and tuned for moderate batch sizes (~500 tweets).
 - There is no retry/backoff logic for rate-limited API calls yet.
 
