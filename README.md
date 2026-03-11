@@ -82,10 +82,9 @@ sequenceDiagram
 ## Limitations
 
 - Nearby feed uses a hardcoded city instead of real user geolocation. This limits personalization and underestimates how much a location-based news feed can improve sign-up funnels.
+- The pipeline currently ingests around 2,000 tweets from the X API per run; fetching more would surface richer clusters and higher-quality stories, at the cost of rate limits and processing time.
 - Story IDs are not stable across pipeline runs (no deep linking yet).
 - Scheduling is single-process only - production would use a platform scheduler (e.g., Vercel Cron).
-- DBSCAN is O(n²) and tuned for moderate batch sizes (~500 tweets).
-- There is no retry/backoff logic for rate-limited API calls yet.
 
 ## Deep Dive
 
