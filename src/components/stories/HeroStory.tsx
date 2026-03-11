@@ -29,10 +29,10 @@ export function HeroStory({ story, onClick, totalStories, medianVelocity }: Prop
       className={`animate-fade-in-up ${onClick ? 'cursor-pointer group' : ''}`}
       onClick={onClick}
     >
-      <div className="px-7 pt-7 pb-8 border-b border-white/[0.08]">
+      <div className="px-4 sm:px-7 pt-5 sm:pt-7 pb-6 sm:pb-8 border-b border-white/[0.08]">
         {/* Label + Category + timestamp */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <div className="flex items-center gap-2">
               <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${label.dotClass}`} />
               <span
@@ -47,11 +47,11 @@ export function HeroStory({ story, onClick, totalStories, medianVelocity }: Prop
               {categoryStyle.label}
             </span>
           </div>
-          <span className="text-[0.6875rem] text-[#71767b]">{timeAgo(story.generatedAt)}</span>
+          <span className="text-[0.6875rem] text-[#71767b] shrink-0">{timeAgo(story.generatedAt)}</span>
         </div>
 
         {/* Editorial headline */}
-        <h1 className="text-[3.25rem] font-black tracking-[-0.04em] leading-[1.03] text-white mb-5 group-hover:text-white/90 transition-colors duration-150">
+        <h1 className="text-[1.75rem] sm:text-[2.5rem] md:text-[3.25rem] font-black tracking-[-0.04em] leading-[1.08] sm:leading-[1.03] text-white mb-4 sm:mb-5 group-hover:text-white/90 transition-colors duration-150">
           {story.headline}
         </h1>
 
@@ -60,26 +60,27 @@ export function HeroStory({ story, onClick, totalStories, medianVelocity }: Prop
           const firstImage = getFirstImage(story.representativeTweets);
           if (firstImage) {
             return (
-              <div className="flex gap-6 items-start">
-                <div className="flex-1 min-w-0">
-                  <p className="text-[1.0625rem] text-[#e7e9ea] leading-[1.7]">
-                    {story.summary}
-                  </p>
-                  <SourcesStrip tweets={story.representativeTweets} />
-                </div>
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
+                {/* Image on top for mobile, right side for desktop */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={firstImage}
                   alt=""
-                  className="shrink-0 rounded-xl max-w-[280px] max-h-[320px] w-auto h-auto"
+                  className="shrink-0 rounded-xl w-full sm:w-auto max-w-full sm:max-w-[280px] max-h-[220px] sm:max-h-[320px] object-cover sm:order-2"
                   onClick={(e) => e.stopPropagation()}
                 />
+                <div className="flex-1 min-w-0 sm:order-1">
+                  <p className="text-[0.9375rem] sm:text-[1.0625rem] text-[#e7e9ea] leading-[1.6] sm:leading-[1.7]">
+                    {story.summary}
+                  </p>
+                  <SourcesStrip tweets={story.representativeTweets} />
+                </div>
               </div>
             );
           }
           return (
             <>
-              <p className="text-[1.0625rem] text-[#e7e9ea] leading-[1.7]">
+              <p className="text-[0.9375rem] sm:text-[1.0625rem] text-[#e7e9ea] leading-[1.6] sm:leading-[1.7]">
                 {story.summary}
               </p>
               <SourcesStrip tweets={story.representativeTweets} />
@@ -88,7 +89,7 @@ export function HeroStory({ story, onClick, totalStories, medianVelocity }: Prop
         })()}
 
         {/* Metrics row */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-6">
+        <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-2 mt-5 sm:mt-6">
           <div className="flex items-center gap-1.5">
             <RiBarChartHorizontalFill className="text-[#71767b]" size={12} />
             <span className="text-[0.75rem] text-[#71767b]">
@@ -114,7 +115,7 @@ export function HeroStory({ story, onClick, totalStories, medianVelocity }: Prop
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="ml-auto flex items-center gap-1.5 text-[0.8125rem] text-[#71767b] hover:text-white border border-white/[0.1] hover:border-white/[0.25] rounded-full px-3 py-1 transition-all duration-150 group"
+            className="sm:ml-auto flex items-center gap-1.5 text-[0.8125rem] text-[#71767b] hover:text-white border border-white/[0.1] hover:border-white/[0.25] rounded-full px-3 py-1 transition-all duration-150 group"
           >
             <FaXTwitter size={11} />
             <span>View discussion</span>

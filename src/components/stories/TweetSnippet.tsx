@@ -146,7 +146,7 @@ function FullTweetCard({ tweet, hideMedia }: { tweet: TweetPreview; hideMedia?: 
           href={tweetUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="block mt-2.5 pl-[44px]"
+          className="block mt-2.5 sm:pl-[44px]"
           onClick={(e) => e.stopPropagation()}
         >
           <p className="text-[0.9375rem] text-[#e7e9ea] leading-[1.5]">
@@ -155,7 +155,7 @@ function FullTweetCard({ tweet, hideMedia }: { tweet: TweetPreview; hideMedia?: 
         </a>
 
         {/* Metrics row */}
-        <div className="flex items-center gap-5 mt-3 pl-[44px]">
+        <div className="flex items-center gap-3 sm:gap-5 mt-3 sm:pl-[44px]">
           <MetricChip
             icon={<RiChat1Line size={14} />}
             value={tweet.replyCount ?? 0}

@@ -80,8 +80,8 @@ const CTA_AFTER = 8;
 
 function InlineCta() {
   return (
-    <div className="col-span-2 border-b border-white/8 bg-white/2">
-      <div className="max-w-md mx-auto px-6 py-10 text-center">
+    <div className="col-span-1 sm:col-span-2 border-b border-white/8 bg-white/2">
+      <div className="max-w-md mx-auto px-4 sm:px-6 py-8 sm:py-10 text-center">
         <div className="flex items-center justify-center gap-2 mb-3">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#1d9bf0] opacity-50" />
@@ -423,7 +423,7 @@ export function StoriesPageClient() {
         />
       )}
 
-      <main className="w-full max-w-[1400px] mx-auto px-3">
+      <main className="w-full max-w-[1400px] mx-auto px-0 sm:px-3">
         {loading ? (
           <SkeletonFeed />
         ) : fetchError ? (
@@ -438,7 +438,7 @@ export function StoriesPageClient() {
         ) : (
           <div
             key={refreshKey}
-            className={`grid grid-cols-[minmax(0,1fr)_260px] transition-opacity duration-200 ${
+            className={`grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] transition-opacity duration-200 ${
               feedPhase === 'out' ? 'opacity-0' : 'opacity-100'
             }`}
           >
@@ -455,17 +455,17 @@ export function StoriesPageClient() {
               </div>
 
               {/* Section header */}
-              <div className="flex items-center gap-2.5 px-6 py-4 border-b border-white/8">
+              <div className="flex items-center gap-2.5 px-4 sm:px-6 py-4 border-b border-white/8">
                 <span className="text-[0.6875rem] font-semibold tracking-[0.14em] uppercase text-[#71767b]">
                   More stories
                 </span>
                 <LiveIndicator isRunning={isRunning} />
               </div>
 
-              {/* Two-column story grid — visible stories */}
-              <div className="grid grid-cols-2">
+              {/* Story grid — single column on mobile, two columns on sm+ */}
+              <div className="grid grid-cols-1 sm:grid-cols-2">
                 {allStories.slice(0, CTA_AFTER).map((story, i) => (
-                  <div key={story.id} className={i % 2 === 0 ? 'border-r border-white/8' : ''}>
+                  <div key={story.id} className={i % 2 === 0 ? 'sm:border-r border-white/8' : ''}>
                     <StoryCard story={story} index={i + 1} onClick={() => setSelectedStory(story)} totalStories={totalStories} medianVelocity={medianVelocity} />
                   </div>
                 ))}
@@ -474,9 +474,9 @@ export function StoriesPageClient() {
               {/* Fade-out teaser + CTA */}
               {allStories.length > CTA_AFTER && (
                 <div className="relative">
-                  <div className="grid grid-cols-2 overflow-hidden max-h-[420px]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 overflow-hidden max-h-[420px]">
                     {allStories.slice(CTA_AFTER, CTA_AFTER + 4).map((story, i) => (
-                      <div key={story.id} className={i % 2 === 0 ? 'border-r border-white/8' : ''}>
+                      <div key={story.id} className={i % 2 === 0 ? 'sm:border-r border-white/8' : ''}>
                         <StoryCard story={story} index={CTA_AFTER + i + 1} onClick={() => setSelectedStory(story)} totalStories={totalStories} medianVelocity={medianVelocity} />
                       </div>
                     ))}
@@ -491,8 +491,8 @@ export function StoriesPageClient() {
               <div className="h-16" />
             </div>
 
-            {/* ── Right sidebar ── */}
-            <div className="sticky top-14 h-[calc(100vh-56px)] overflow-y-auto border-l border-white/8 min-w-0">
+            {/* ── Right sidebar — hidden on mobile/tablet ── */}
+            <div className="hidden lg:block sticky top-14 h-[calc(100vh-56px)] overflow-y-auto border-l border-white/8 min-w-0">
               <RightPanel
                 status={data?.status ?? null}
                 stories={allStories}

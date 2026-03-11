@@ -113,11 +113,11 @@ export function StoryDetailModal({ story, onClose, storyIndex, totalStories, med
         role="dialog"
         aria-modal="true"
         aria-label={story.headline}
-        className="fixed inset-y-0 right-0 z-50 w-full max-w-[620px] bg-black border-l border-white/[0.08] flex flex-col animate-modal-slide-in shadow-2xl overflow-hidden"
+        className="fixed inset-0 sm:inset-y-0 sm:left-auto sm:right-0 z-50 w-full sm:max-w-[620px] bg-black sm:border-l border-white/[0.08] flex flex-col animate-modal-slide-in shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Sticky header ── */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-b border-white/[0.08] flex-shrink-0 bg-black/95 backdrop-blur-sm">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-white/[0.08] flex-shrink-0 bg-black/95 backdrop-blur-sm">
           <div className="flex items-center gap-2.5 min-w-0">
             <span
               className={`px-2 py-0.5 rounded-full text-[0.5625rem] font-semibold tracking-wide uppercase flex-shrink-0 ${categoryStyle.bgClass} ${categoryStyle.textClass}`}
@@ -147,13 +147,13 @@ export function StoryDetailModal({ story, onClose, storyIndex, totalStories, med
         {/* ── Scrollable body ── */}
         <div className="flex-1 overflow-y-auto">
           {/* Media slideshow */}
-          <div className="px-7 pt-4">
+          <div className="px-4 sm:px-7 pt-4">
             <MediaGallery tweets={story.representativeTweets} />
           </div>
 
           {/* ── Headline + summary ── */}
-          <div className="px-7 pt-6 pb-5 border-b border-white/[0.08]">
-            <h2 className="text-[1.875rem] font-black tracking-[-0.035em] leading-[1.1] text-white mb-3.5">
+          <div className="px-4 sm:px-7 pt-5 sm:pt-6 pb-5 border-b border-white/[0.08]">
+            <h2 className="text-[1.375rem] sm:text-[1.875rem] font-black tracking-[-0.035em] leading-[1.15] sm:leading-[1.1] text-white mb-3 sm:mb-3.5">
               {story.headline}
             </h2>
             <p className="text-[0.9375rem] text-[#e7e9ea] leading-[1.65]">
@@ -161,7 +161,7 @@ export function StoryDetailModal({ story, onClose, storyIndex, totalStories, med
             </p>
 
             {/* Metrics row */}
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-5 pt-4 border-t border-white/[0.06]">
+            <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-5 gap-y-2 mt-4 sm:mt-5 pt-4 border-t border-white/[0.06]">
               <div className="flex items-center gap-1.5">
                 <RiBarChartHorizontalFill className="text-[#71767b]" size={13} />
                 <span className="text-[0.8125rem] text-[#71767b]">
@@ -185,7 +185,7 @@ export function StoryDetailModal({ story, onClose, storyIndex, totalStories, med
                 href={tweetUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ml-auto flex items-center gap-1.5 text-[0.8125rem] text-[#71767b] hover:text-white border border-white/[0.1] hover:border-white/[0.25] rounded-full px-3.5 py-1.5 transition-all duration-150 group"
+                className="sm:ml-auto flex items-center gap-1.5 text-[0.8125rem] text-[#71767b] hover:text-white border border-white/[0.1] hover:border-white/[0.25] rounded-full px-3.5 py-1.5 transition-all duration-150 group"
               >
                 <span>View on</span>
                 <FaXTwitter size={11} />
@@ -198,7 +198,7 @@ export function StoryDetailModal({ story, onClose, storyIndex, totalStories, med
           </div>
 
           {/* ── From X conversations ── */}
-          <div className="px-7 pt-5">
+          <div className="px-4 sm:px-7 pt-5">
             {/* Section header */}
             <div className="flex items-center gap-2 mb-4">
               <span className="text-[0.6875rem] font-semibold tracking-[0.14em] uppercase text-[#71767b]">

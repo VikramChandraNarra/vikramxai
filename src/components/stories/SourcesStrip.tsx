@@ -50,13 +50,13 @@ export function SourcesStrip({ tweets }: Props) {
                 src={tweet.authorProfileImageUrl}
                 username={tweet.authorUsername}
               />
-              <span className="text-[0.8125rem] font-semibold text-white/70 flex-shrink-0">
+              <span className="text-[0.8125rem] font-semibold text-white/70 flex-shrink-0 truncate max-w-[120px] sm:max-w-none">
                 @{tweet.authorUsername}
               </span>
-              <span className="text-[0.75rem] text-[#71767b] flex-shrink-0">
+              <span className="text-[0.75rem] text-[#71767b] flex-shrink-0 hidden sm:inline">
                 · {timeAgo(tweet.createdAt)}
               </span>
-              <span className="text-[0.8125rem] text-[#71767b] truncate group-hover:text-[#e7e9ea] transition-colors">
+              <span className="text-[0.8125rem] text-[#71767b] truncate group-hover:text-[#e7e9ea] transition-colors hidden sm:inline">
                 {tweet.text}
               </span>
               <RiArrowRightUpLine

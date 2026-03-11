@@ -25,7 +25,7 @@ export function StoryCard({ story, index, onClick, totalStories, medianVelocity 
 
   return (
     <article
-      className={`px-6 py-5 border-b border-white/[0.08] hover:bg-white/[0.025] transition-colors duration-150 animate-fade-in-up ${onClick ? 'cursor-pointer' : ''}`}
+      className={`px-4 sm:px-6 py-4 sm:py-5 border-b border-white/[0.08] hover:bg-white/[0.025] transition-colors duration-150 animate-fade-in-up ${onClick ? 'cursor-pointer' : ''}`}
       style={{ animationDelay: `${index * 55}ms` }}
       onClick={onClick}
     >

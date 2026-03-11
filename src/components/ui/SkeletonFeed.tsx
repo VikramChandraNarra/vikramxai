@@ -18,7 +18,7 @@ function SkeletonAvatar({ size = 'h-5 w-5' }: { size?: string }) {
 
 function SkeletonHero() {
   return (
-    <div className="px-7 pt-7 pb-8 border-b border-white/8">
+    <div className="px-4 sm:px-7 pt-5 sm:pt-7 pb-6 sm:pb-8 border-b border-white/8">
       <div className="flex items-center justify-between mb-4">
         <SkeletonBlock w="w-20" h="h-2.5" />
         <SkeletonBlock w="w-14" h="h-2.5" />
@@ -83,29 +83,29 @@ function SkeletonRight() {
 
 export function SkeletonFeed() {
   return (
-    <div aria-hidden="true" className="grid grid-cols-[minmax(0,1fr)_260px] items-start">
+    <div aria-hidden="true" className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px] items-start">
       {/* Main content */}
       <div>
         <SkeletonHero />
 
         {/* Section header skeleton */}
-        <div className="flex items-center gap-2.5 px-6 py-4 border-b border-white/8">
+        <div className="flex items-center gap-2.5 px-4 sm:px-6 py-4 border-b border-white/8">
           <SkeletonBlock w="w-24" h="h-2.5" />
           <SkeletonBlock w="w-10" h="h-2" />
         </div>
 
-        {/* 2-column story grid */}
-        <div className="grid grid-cols-2">
+        {/* Story grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2">
           {[0, 1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className={i % 2 === 0 ? 'border-r border-white/8' : ''}>
+            <div key={i} className={i % 2 === 0 ? 'sm:border-r border-white/8' : ''}>
               <SkeletonStoryCard />
             </div>
           ))}
         </div>
       </div>
 
-      {/* Right sidebar */}
-      <div className="border-l border-white/8">
+      {/* Right sidebar — hidden on mobile/tablet */}
+      <div className="hidden lg:block border-l border-white/8">
         <SkeletonRight />
       </div>
     </div>

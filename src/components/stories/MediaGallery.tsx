@@ -106,14 +106,14 @@ function Slideshow({ media }: { media: RankedMedia[] }) {
       {/* Prev / Next arrows — visible on hover */}
       <button
         onClick={handlePrev}
-        className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover/slide:opacity-100 transition-opacity duration-200 hover:bg-black/80"
+        className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white opacity-100 sm:opacity-0 sm:group-hover/slide:opacity-100 transition-opacity duration-200 hover:bg-black/80"
         aria-label="Previous"
       >
         <RiArrowLeftSLine size={20} />
       </button>
       <button
         onClick={handleNext}
-        className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover/slide:opacity-100 transition-opacity duration-200 hover:bg-black/80"
+        className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white opacity-100 sm:opacity-0 sm:group-hover/slide:opacity-100 transition-opacity duration-200 hover:bg-black/80"
         aria-label="Next"
       >
         <RiArrowRightSLine size={20} />

@@ -27,8 +27,8 @@ export function TopNav({ isRunning, isRefreshing, isIngesting, lastFetched, onRe
 
   return (
     <nav className="sticky top-0 z-30 h-14 border-b border-white/8 bg-black/92 backdrop-blur-md">
-      <div className="max-w-[1400px] mx-auto h-full flex items-center px-4">
-        <div className="flex items-center gap-3">
+      <div className="max-w-[1400px] mx-auto h-full flex items-center px-3 sm:px-4">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden">
             <Image
               src="/new-2023-twitter-logo-x-icon-design_1017-45418.avif"
@@ -42,17 +42,17 @@ export function TopNav({ isRunning, isRefreshing, isIngesting, lastFetched, onRe
           <span className="text-[1rem] font-extrabold text-white tracking-[-0.015em]">
             AI Stories
           </span>
-          <span className="text-[#71767b] leading-none">·</span>
-          <LiveIndicator isRunning={isRunning} />
+          <span className="text-[#71767b] leading-none hidden sm:inline">·</span>
+          <span className="hidden sm:inline-flex"><LiveIndicator isRunning={isRunning} /></span>
         </div>
 
-        <div className="flex-1 text-center">
+        <div className="flex-1 text-center hidden md:block">
           <span className="text-[0.8125rem] text-[#71767b]">{today}</span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 ml-auto">
           {lastFetched && (
-            <span className="text-[0.75rem] text-[#71767b]">
+            <span className="text-[0.75rem] text-[#71767b] hidden lg:inline">
               {timeAgo(lastFetched.toISOString())}
             </span>
           )}
@@ -61,7 +61,7 @@ export function TopNav({ isRunning, isRefreshing, isIngesting, lastFetched, onRe
               onClick={onIngest}
               disabled={isIngesting || isRefreshing}
               aria-label="Fetch tweets from X API"
-              className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[0.6875rem] font-semibold text-amber-400 hover:bg-amber-500/20 transition-colors disabled:opacity-40"
+              className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 sm:px-3 py-1 text-[0.6875rem] font-semibold text-amber-400 hover:bg-amber-500/20 transition-colors disabled:opacity-40 hidden sm:inline-flex"
             >
               {isIngesting ? 'Fetching…' : 'Fetch Tweets'}
             </button>
@@ -77,14 +77,14 @@ export function TopNav({ isRunning, isRefreshing, isIngesting, lastFetched, onRe
             }`}
           >
             <RiRefreshLine className={isRefreshing ? 'animate-spin' : ''} size={14} />
-            {isRefreshing && <span>Updating</span>}
+            {isRefreshing && <span className="hidden sm:inline">Updating</span>}
           </button>
-          <span className="w-px h-4 bg-white/10" />
+          <span className="w-px h-4 bg-white/10 hidden sm:block" />
           <a
             href={LOGIN_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[0.875rem] font-bold text-white hover:text-white/70 transition-colors"
+            className="text-[0.875rem] font-bold text-white hover:text-white/70 transition-colors hidden sm:inline"
           >
             Log in
           </a>
@@ -92,7 +92,7 @@ export function TopNav({ isRunning, isRefreshing, isIngesting, lastFetched, onRe
             href={SIGNUP_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-full bg-white px-4 py-1.5 text-[0.875rem] font-bold text-black hover:bg-white/90 active:scale-[0.97] transition-all duration-150"
+            className="rounded-full bg-white px-3 sm:px-4 py-1.5 text-[0.8125rem] sm:text-[0.875rem] font-bold text-black hover:bg-white/90 active:scale-[0.97] transition-all duration-150"
           >
             Sign up
           </a>
