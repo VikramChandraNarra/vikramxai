@@ -52,12 +52,12 @@ export function SideStoryCard({ story, index, totalStories, medianVelocity }: Pr
       </div>
 
       {/* Headline */}
-      <h3 className="text-[0.9375rem] font-bold leading-[1.3] tracking-[-0.01em] text-white mb-1.5 line-clamp-3">
+      <h3 className="text-[0.9375rem] font-bold leading-[1.3] tracking-[-0.01em] text-white mb-1.5">
         {story.headline}
       </h3>
 
       {/* Summary */}
-      <p className="text-[0.8125rem] text-[#71767b] leading-[1.5] line-clamp-2 mb-3">
+      <p className="text-[0.8125rem] text-[#71767b] leading-[1.5] mb-3">
         {story.summary}
       </p>
 

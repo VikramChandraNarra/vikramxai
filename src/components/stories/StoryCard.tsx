@@ -65,7 +65,7 @@ export function StoryCard({ story, index, onClick, totalStories, medianVelocity 
         </h2>
 
         {/* Summary */}
-        <p className="text-[0.875rem] text-[#71767b] leading-[1.55] line-clamp-2 mb-3">
+        <p className="text-[0.875rem] text-[#71767b] leading-[1.55] mb-3">
           {story.summary}
         </p>
       </div>

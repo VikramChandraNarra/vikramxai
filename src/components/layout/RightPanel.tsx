@@ -66,7 +66,7 @@ export function RightPanel({ status, stories, headlineStory, onStoryClick }: Pro
                     {i + 1}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[0.8125rem] font-bold text-white leading-[1.3] line-clamp-2 group-hover:text-[#e7e9ea] transition-colors">
+                    <p className="text-[0.8125rem] font-bold text-white leading-[1.3] group-hover:text-[#e7e9ea] transition-colors">
                       {story.headline}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
@@ -106,7 +106,7 @@ export function RightPanel({ status, stories, headlineStory, onStoryClick }: Pro
                     Most engaged
                   </span>
                 </div>
-                <p className="text-[0.8125rem] font-semibold text-white leading-[1.3] line-clamp-2 mb-1 group-hover:text-[#e7e9ea] transition-colors">
+                <p className="text-[0.8125rem] font-semibold text-white leading-[1.3] mb-1 group-hover:text-[#e7e9ea] transition-colors">
                   {mostEngaged.headline}
                 </p>
                 <span className="text-[0.75rem] text-[#71767b]">
@@ -125,7 +125,7 @@ export function RightPanel({ status, stories, headlineStory, onStoryClick }: Pro
                     Fastest moving
                   </span>
                 </div>
-                <p className="text-[0.8125rem] font-semibold text-white leading-[1.3] line-clamp-2 mb-1 group-hover:text-[#e7e9ea] transition-colors">
+                <p className="text-[0.8125rem] font-semibold text-white leading-[1.3] mb-1 group-hover:text-[#e7e9ea] transition-colors">
                   {fastest.headline}
                 </p>
                 <span className="text-[0.75rem] text-[#71767b]">

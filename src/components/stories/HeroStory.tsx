@@ -55,33 +55,40 @@ export function HeroStory({ story, onClick, totalStories, medianVelocity }: Prop
           {story.headline}
         </h1>
 
-        {/* Summary + image flow (float lets content wrap around the image) */}
-        <div>
-          {(() => {
-            const firstImage = getFirstImage(story.representativeTweets);
-            if (firstImage) {
-              return (
-                // eslint-disable-next-line @next/next/no-img-element
+        {/* Summary + sources + image */}
+        {(() => {
+          const firstImage = getFirstImage(story.representativeTweets);
+          if (firstImage) {
+            return (
+              <div className="flex gap-6 items-start">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[1.0625rem] text-[#e7e9ea] leading-[1.7]">
+                    {story.summary}
+                  </p>
+                  <SourcesStrip tweets={story.representativeTweets} />
+                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={firstImage}
                   alt=""
-                  className="float-right ml-6 mb-4 rounded-xl max-w-[280px] max-h-[320px] w-auto h-auto"
+                  className="shrink-0 rounded-xl max-w-[280px] max-h-[320px] w-auto h-auto"
                   onClick={(e) => e.stopPropagation()}
                 />
-              );
-            }
-            return null;
-          })()}
-
-          <p className="text-[1.0625rem] text-[#e7e9ea] leading-[1.7] mb-2">
-            {story.summary}
-          </p>
-
-          <SourcesStrip tweets={story.representativeTweets} />
-        </div>
+              </div>
+            );
+          }
+          return (
+            <>
+              <p className="text-[1.0625rem] text-[#e7e9ea] leading-[1.7]">
+                {story.summary}
+              </p>
+              <SourcesStrip tweets={story.representativeTweets} />
+            </>
+          );
+        })()}
 
         {/* Metrics row */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-6 clear-both">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-6">
           <div className="flex items-center gap-1.5">
             <RiBarChartHorizontalFill className="text-[#71767b]" size={12} />
             <span className="text-[0.75rem] text-[#71767b]">

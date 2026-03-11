@@ -136,7 +136,7 @@ export function RightRail({ status, stories, headlineStory, lastFetched }: Props
                       <span className="text-[0.75rem] text-[#71767b] mb-1 block">
                         {i === 0 ? 'Top story' : `Story ${i + 1}`}
                       </span>
-                      <p className="text-[0.875rem] font-bold text-white leading-[1.3] line-clamp-2 tracking-[-0.01em]">
+                      <p className="text-[0.875rem] font-bold text-white leading-[1.3] tracking-[-0.01em]">
                         {story.headline}
                       </p>
                       <div className="flex items-center gap-3 mt-1.5">
@@ -180,7 +180,7 @@ export function RightRail({ status, stories, headlineStory, lastFetched }: Props
                       Most engaged
                     </span>
                   </div>
-                  <p className="text-[0.8125rem] text-white font-semibold leading-[1.3] line-clamp-2">
+                  <p className="text-[0.8125rem] text-white font-semibold leading-[1.3]">
                     {top.headline}
                   </p>
                   <span className="text-[0.75rem] text-[#71767b]">
@@ -202,7 +202,7 @@ export function RightRail({ status, stories, headlineStory, lastFetched }: Props
                       Fastest moving
                     </span>
                   </div>
-                  <p className="text-[0.8125rem] text-white font-semibold leading-[1.3] line-clamp-2">
+                  <p className="text-[0.8125rem] text-white font-semibold leading-[1.3]">
                     {top.headline}
                   </p>
                   <span className="text-[0.75rem] text-[#71767b]">
@@ -224,7 +224,7 @@ export function RightRail({ status, stories, headlineStory, lastFetched }: Props
                       Most widespread
                     </span>
                   </div>
-                  <p className="text-[0.8125rem] text-white font-semibold leading-[1.3] line-clamp-2">
+                  <p className="text-[0.8125rem] text-white font-semibold leading-[1.3]">
                     {top.headline}
                   </p>
                   <span className="text-[0.75rem] text-[#71767b]">
