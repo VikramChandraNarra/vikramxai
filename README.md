@@ -1,28 +1,19 @@
 # X Stories
 
-AI News-style logged-out homepage for X.com Web (Desktop).
+AI-curated news homepage for X.com — reimagining the logged-out experience.
 
-X Stories reimagines the logged-out X homepage as a modern editorial front page built from live public conversations. Instead of showing isolated viral posts, it clusters related posts into emerging stories with generated headlines, summaries, source posts, and live momentum signals.
+**[Live Demo →](https://vikramxai.vercel.app)**
 
-[Add full homepage screenshot here]
-
-## What it does
-
-- Ingests recent public posts from X across topic buckets
-- Clusters related posts into stories
-- Ranks stories by engagement, velocity, recency, and author diversity
-- Generates short editorial headlines and summaries
-- Serves the homepage from cache for fast loads
-- Supports a logged-out funnel with sign up / log in CTAs
+X Stories turns the logged-out X homepage into a modern editorial front page. Instead of showing isolated viral posts, it clusters live public conversations into emerging stories with AI-generated headlines, summaries, source posts, and momentum signals.
 
 ## Why
 
-The current logged-out X homepage does not fully convey what is happening across the platform. This project explores a different entry point: a live AI-curated front page for the internet built from public conversations on X.
+Tens of millions of people visit x.com logged out every day, but the current homepage doesn't convey what's actually happening across the platform. This project explores a different entry point: a live, AI-curated front page for the internet — built entirely from public conversations on X.
 
 ## Architecture
 
 ```mermaid
-flowchart LR
+flowchart TD
     A[X API v2] --> B[Ingest]
     B --> C[Preprocess]
     C --> D[Embed]
@@ -30,11 +21,11 @@ flowchart LR
     E --> F[Rank]
     F --> G[Summarize]
     G --> H[Redis Cache]
-    H --> I[GET /api/stories]
+    H --> I["GET /api/stories"]
     I --> J[Homepage UI]
-````
+```
 
-## Request flow
+## Request Flow
 
 ```mermaid
 sequenceDiagram
@@ -57,110 +48,49 @@ sequenceDiagram
 
 ## Pipeline
 
-* Fetch public posts from X by bucket
-* Normalize and deduplicate tweets
-* Generate embeddings with OpenAI
-* Cluster related tweets into stories
-* Rank clusters by engagement, velocity, recency, and author diversity
-* Select representative source posts
-* Generate headline and summary
-* Cache final stories in Redis
+1. **Ingest** — Fetch public posts from X across 7 topic buckets (breaking, AI, tech, politics, business, culture, nearby)
+2. **Preprocess** — Normalize text, deduplicate, extract hashtags and URLs
+3. **Embed** — Generate vector embeddings with OpenAI `text-embedding-3-small`
+4. **Cluster** — DBSCAN with cosine distance, then conservative URL/hashtag merge
+5. **Rank** — Weighted score across engagement, velocity, recency, and author diversity
+6. **Select** — Pick author-diverse representative posts per cluster
+7. **Summarize** — Generate headline + summary with GPT-4o-mini
+8. **Cache** — Persist to Redis with stale-while-revalidate serving
 
 ## Stack
 
-* Next.js 16
-* React
-* TypeScript
-* Tailwind CSS
-* Upstash Redis
-* X API v2
-* OpenAI API
+| Layer | Technology |
+| --- | --- |
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript, React 19 |
+| Styling | Tailwind CSS v4 |
+| Cache | Upstash Redis |
+| Data | X API v2 |
+| AI | OpenAI (embeddings + summarization) |
 
-## API routes
+## API
 
-### `GET /api/stories`
+| Route | Method | Purpose |
+| --- | --- | --- |
+| `/api/stories` | GET | Returns story feed + pipeline status; triggers refresh when stale |
+| `/api/stories/refresh` | POST | Re-processes stories from cached tweets without calling the X API |
 
-Returns:
+## Key Design Decisions
 
-* `headlineStory`
-* `stories`
-* `status`
-
-### `POST /api/stories/refresh`
-
-Re-processes stories from cached tweets without calling the X API again.
-
-## Local development
-
-### Install
-
-```bash
-npm install
-```
-
-### Environment
-
-```bash
-X_BEARER_TOKEN=
-OPENAI_API_KEY=
-UPSTASH_REDIS_REST_URL=
-UPSTASH_REDIS_REST_TOKEN=
-USE_MOCK_DATA=false
-```
-
-### Run
-
-```bash
-npm run dev
-```
-
-## Example response
-
-```json
-{
-  "headlineStory": {
-    "id": "story-123",
-    "headline": "OpenAI unveils GPT-5 with stronger reasoning",
-    "summary": "OpenAI introduced GPT-5, claiming major improvements in reasoning and multimodal tasks.",
-    "category": "ai",
-    "isHeadline": true
-  },
-  "stories": [],
-  "status": {
-    "isRunning": false,
-    "lastRunAt": "2026-03-10T14:20:00Z",
-    "lastSuccessfulRunAt": "2026-03-10T14:22:00Z",
-    "storyCount": 12,
-    "cacheAgeMs": 87000
-  }
-}
-```
-
-## Key design decisions
-
-* Story-first instead of feed-first
-* Fast responses via cache
-* Source-grounded UI through representative X posts
-* Logged-out conversion through gated deeper exploration
-* Short summaries instead of full article generation
+- **Story-first, not feed-first** — Conversations are grouped into narratives rather than shown as a raw stream
+- **Cache-first serving** — Responses come from Redis; pipeline runs are fire-and-forget background tasks
+- **Source-grounded** — Every story links back to real X posts, not just AI-generated text
+- **Conversion-aware** — The logged-out experience complements the sign-up funnel with gated deeper exploration
+- **Swappable LLM** — Summarization is model-agnostic and designed to work with Grok when API access is available
 
 ## Limitations
 
-* Prototype-grade background scheduling
-* Heuristic bucket queries
-* Story IDs are not stable across runs
-* Nearby feed is bucket-based, not true geo search
-* Clustering is optimized for moderate batch sizes
+- Story IDs are not stable across pipeline runs (no deep linking yet)
+- Single-process scheduling — production would use a platform scheduler (Vercel Cron, etc.)
+- DBSCAN is O(n²), tuned for moderate batch sizes (~500 tweets)
+- Nearby feed uses a hardcoded city rather than true geolocation
+- No retry/backoff for rate-limited API calls
 
-## More detail
+## Deep Dive
 
-See `BACKEND_ARCHITECTURE.md` for the deeper backend writeup.
-
-## Screenshots
-
-* [Add full homepage screenshot here]
-* [Add story detail modal screenshot here]
-* [Add blur/signup gate screenshot here]
-
-```
-```
+See [`docs/backend-architecture.md`](docs/backend-architecture.md) for the full backend writeup — cache behavior, failure handling, ranking formulas, and configuration reference.
