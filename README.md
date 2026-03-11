@@ -1,4 +1,3 @@
-````md
 # X Stories
 
 AI News-style logged-out homepage for X.com Web (Desktop).
