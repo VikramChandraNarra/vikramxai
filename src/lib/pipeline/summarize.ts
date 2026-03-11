@@ -42,7 +42,7 @@ async function summarizeCluster(cluster: ScoredCluster, isHeadline: boolean): Pr
 1. A specific, punchy headline (under 12 words, no clickbait)
 2. A 2-sentence factual summary covering who, what, and why it matters
 
-Important: If the tweets describe an unverified claim or rumor rather than confirmed facts, phrase the headline carefully using wording like "Users on X claim..." or "Reports suggest..." instead of presenting it as confirmed fact.
+Important: If the tweets describe an unverified claim or rumor rather than confirmed facts, signal uncertainty in the headline using varied phrasing — for example: "X users report...", "According to posts on X...", "Social media reports suggest...", "Posts circulating on X claim...", or "Unverified reports indicate...". Vary the language naturally; do not repeat the same phrasing across stories.
 
 Tweets:
 ${tweetLines}
@@ -92,7 +92,7 @@ Respond with valid JSON only: {"headline": "...", "summary": "..."}`);
   };
 }
 
-const SUMMARIZE_BATCH_SIZE = 3;
+const SUMMARIZE_BATCH_SIZE = 10;
 
 export async function summarizeClusters(clusters: ScoredCluster[]): Promise<Story[]> {
   const stories: Story[] = [];

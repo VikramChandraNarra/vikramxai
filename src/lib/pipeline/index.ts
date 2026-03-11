@@ -84,6 +84,41 @@ class Pipeline {
       cache.isRefreshing = false;
     }
   }
+
+  // Regenerates stories using the tweets already in Redis — no X API call.
+  // Used by the manual refresh endpoint to save API credits.
+  async runWithCachedTweets(): Promise<void> {
+    if (cache.isRefreshing) return;
+
+    const tweets = await getRawTweets();
+    if (!tweets) {
+      console.warn('[Pipeline] runWithCachedTweets: no cached tweets found, falling back to full run');
+      return this.run();
+    }
+
+    cache.isRefreshing = true;
+    try {
+      const runAt = new Date().toISOString();
+      await setCacheMeta({ lastRunAt: runAt });
+      console.log(`[Pipeline] Re-processing ${tweets.length} cached tweets (no X API call)`);
+
+      const cleaned = preprocessTweets(tweets);
+      const embedded = await embedTweets(cleaned);
+      const clusters = clusterTweets(embedded, CLUSTER_EPSILON, CLUSTER_MIN_PTS);
+      const ranked = scoreAndRank(clusters, MAX_STORIES);
+      const stories = await summarizeClusters(ranked);
+
+      await setStories(stories);
+      await setCacheMeta({ lastSuccessfulRunAt: new Date().toISOString(), error: null });
+      console.log(`[Pipeline] Re-generated ${stories.length} stories from cache`);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      await setCacheMeta({ error: errorMsg });
+      console.error('[Pipeline] runWithCachedTweets failed:', errorMsg);
+    } finally {
+      cache.isRefreshing = false;
+    }
+  }
 }
 
 // DEV ONLY: setInterval keeps the pipeline running in a single Node.js process.
@@ -94,6 +129,15 @@ class Pipeline {
 const g = globalThis as { __pipeline?: Pipeline; __pipelineTimer?: ReturnType<typeof setInterval> };
 
 export function getOrInitPipeline(): Pipeline {
+  // Replace a stale singleton (e.g. from a hot-reload cycle before a new method
+  // was added). Checking for the newest method is sufficient — if it's missing
+  // the instance predates the current class definition.
+  const isStale = g.__pipeline && typeof g.__pipeline.runWithCachedTweets !== 'function';
+  if (isStale) {
+    clearInterval(g.__pipelineTimer);
+    g.__pipeline = undefined;
+  }
+
   if (!g.__pipeline) {
     g.__pipeline = new Pipeline();
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Story } from '@/lib/types';
 import { TopNav } from '@/components/layout/TopNav';
@@ -68,6 +68,7 @@ interface StoriesData {
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const POLL_MS = 30_000;
+const REFRESH_POLL_MS = 2_500;
 const SIGNUP_URL = 'https://x.com/i/flow/signup';
 const LOGIN_URL = 'https://x.com/i/flow/login';
 const CTA_AFTER = 8;
@@ -200,6 +201,15 @@ export function StoriesPageClient() {
     }
   }, []);
 
+  const refreshPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopRefreshPoll = useCallback(() => {
+    if (refreshPollRef.current) {
+      clearInterval(refreshPollRef.current);
+      refreshPollRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
     fetchStories();
     const pollTimer = setInterval(fetchStories, POLL_MS);
@@ -207,18 +217,37 @@ export function StoriesPageClient() {
     return () => {
       clearInterval(pollTimer);
       clearInterval(tickTimer);
+      stopRefreshPoll();
     };
-  }, [fetchStories]);
+  }, [fetchStories, stopRefreshPoll]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
+    stopRefreshPoll();
     try {
       await fetch('/api/stories/refresh', { method: 'POST' });
     } catch {
-      // ignore — still re-fetch
+      // ignore
     }
-    await fetchStories();
-  }, [fetchStories]);
+
+    refreshPollRef.current = setInterval(async () => {
+      try {
+        const res = await fetch('/api/stories');
+        if (!res.ok) return;
+        const json: StoriesData = await res.json();
+        setData(json);
+        setLastFetched(new Date());
+        setFetchError(null);
+
+        if (!json.status?.isRunning) {
+          setRefreshing(false);
+          stopRefreshPoll();
+        }
+      } catch {
+        // keep polling
+      }
+    }, REFRESH_POLL_MS);
+  }, [stopRefreshPoll]);
 
   void tick;
 

@@ -3,18 +3,7 @@ interface Props {
   className?: string;
 }
 
-export function LiveIndicator({ isRunning = true, className = '' }: Props) {
-  if (!isRunning) {
-    return (
-      <span className={`inline-flex items-center gap-1.5 ${className}`}>
-        <span className="h-1.5 w-1.5 rounded-full bg-[#71767b]" />
-        <span className="text-[0.6875rem] font-semibold tracking-[0.1em] uppercase text-[#71767b]">
-          Idle
-        </span>
-      </span>
-    );
-  }
-
+export function LiveIndicator({ className = '' }: Props) {
   return (
     <span className={`inline-flex items-center gap-1.5 ${className}`}>
       <span className="relative flex h-1.5 w-1.5">

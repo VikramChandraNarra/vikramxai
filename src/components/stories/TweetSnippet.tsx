@@ -195,27 +195,44 @@ function FullTweetCard({ tweet }: { tweet: TweetPreview }) {
 
 function CompactTweetRow({ tweet }: { tweet: TweetPreview }) {
   const tweetUrl = `https://x.com/${tweet.authorUsername}/status/${tweet.id}`;
+  const profileUrl = `https://x.com/${tweet.authorUsername}`;
 
   return (
-    <a
-      href={tweetUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group flex items-start gap-2 border-l-2 border-white/[0.1] hover:border-[#1d9bf0]/40 pl-3 py-1 transition-colors duration-150"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <Avatar
-        src={tweet.authorProfileImageUrl}
-        username={tweet.authorUsername}
-        size={20}
-      />
-      <p className="text-[0.8125rem] text-[#71767b] leading-[1.45] line-clamp-2 group-hover:text-[#e7e9ea] transition-colors duration-150">
-        <span className="font-semibold text-[#e7e9ea]/70 mr-1">
+    <div className="group flex items-start gap-2 border-l-2 border-white/[0.1] hover:border-[#1d9bf0]/40 pl-3 py-1 transition-colors duration-150">
+      <a
+        href={profileUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className="flex-shrink-0"
+      >
+        <Avatar
+          src={tweet.authorProfileImageUrl}
+          username={tweet.authorUsername}
+          size={20}
+        />
+      </a>
+      <p className="text-[0.8125rem] text-[#71767b] leading-[1.45] line-clamp-2">
+        <a
+          href={profileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="font-semibold text-[#e7e9ea]/70 mr-1 hover:underline"
+        >
           @{tweet.authorUsername}
-        </span>
-        {tweet.text}
+        </a>
+        <a
+          href={tweetUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="hover:text-[#e7e9ea] transition-colors duration-150"
+        >
+          {tweet.text}
+        </a>
       </p>
-    </a>
+    </div>
   );
 }
 
