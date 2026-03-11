@@ -2,9 +2,13 @@
 
 AI-curated news homepage for X.com — reimagining the logged-out experience.
 
-![X Stories Demo](public/webdemoimage.png)
+[![Watch the video](https://img.youtube.com/vi/KANHt7wC4iQ/maxresdefault.jpg)](https://youtu.be/KANHt7wC4iQ)
+
+### [Watch this video on YouTube](https://youtu.be/KANHt7wC4iQ)
 
 **[Live Demo →](https://vikramxai.vercel.app)**
+
+
 
 X Stories turns the logged-out X homepage into a modern editorial front page. Instead of showing isolated viral posts, it clusters live public conversations into emerging stories with AI-generated headlines, summaries, source posts, and momentum signals.
 
