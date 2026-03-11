@@ -56,14 +56,16 @@ export function TopNav({ isRunning, isRefreshing, isIngesting, lastFetched, onRe
               {timeAgo(lastFetched.toISOString())}
             </span>
           )}
-          <button
-            onClick={onIngest}
-            disabled={isIngesting || isRefreshing}
-            aria-label="Fetch tweets from X API"
-            className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[0.6875rem] font-semibold text-amber-400 hover:bg-amber-500/20 transition-colors disabled:opacity-40"
-          >
-            {isIngesting ? 'Fetching…' : 'Fetch Tweets'}
-          </button>
+          {process.env.NEXT_PUBLIC_APP_ENV !== 'prod' && (
+            <button
+              onClick={onIngest}
+              disabled={isIngesting || isRefreshing}
+              aria-label="Fetch tweets from X API"
+              className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[0.6875rem] font-semibold text-amber-400 hover:bg-amber-500/20 transition-colors disabled:opacity-40"
+            >
+              {isIngesting ? 'Fetching…' : 'Fetch Tweets'}
+            </button>
+          )}
           <button
             onClick={onRefresh}
             disabled={isRefreshing}
