@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How posts become stories</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #000000;
+      --surface: #16181c;
+      --accent: #1d9bf0;
+      --accent-dim: rgba(29, 155, 240, 0.12);
+      --accent-hover: rgba(29, 155, 240, 0.08);
+      --green: #00ba7c;
+      --red: #f91880;
+      --orange: #ff7a00;
+      --text: #e7e9ea;
+      --text-secondary: #71767b;
+      --border: #2f3336;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 20px 16px;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      min-height: 100vh;
+    }
+    .pipeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+    .stage {
+      padding: 16px;
+      position: relative;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.4s ease;
+      border-bottom: 1px solid var(--border);
+    }
+    .stage.active {
+      opacity: 1;
+      transform: translateY(0);
+      background: var(--accent-hover);
+    }
+    .stage.completed {
+      opacity: 0.5;
+      transform: translateY(0);
+      background: transparent;
+    }
+    .stage-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .stage-number {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .stage.active .stage-number {
+      background: var(--accent);
+      color: #fff;
+    }
+    .stage.completed .stage-number {
+      background: var(--accent);
+      color: #fff;
+    }
+    .stage-title {
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .stage-desc {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 12px;
+      margin-left: 44px;
+    }
+    .visual {
+      background: var(--surface);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 16px;
+      min-height: 80px;
+      position: relative;
+      overflow: hidden;
+      margin-left: 44px;
+    }
+    .tweets-flow {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .tweet-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      animation: popIn 0.3s ease forwards;
+      opacity: 0;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .bucket-label {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-size: 12px;
+      margin: 2px;
+      font-weight: 500;
+    }
+    .bucket-ai { background: rgba(120, 86, 255, 0.15); color: #7856ff; }
+    .bucket-breaking { background: rgba(249, 24, 128, 0.15); color: var(--red); }
+    .bucket-tech { background: rgba(29, 155, 240, 0.15); color: var(--accent); }
+    .bucket-politics { background: rgba(255, 212, 0, 0.15); color: #ffd400; }
+    .bucket-business { background: rgba(0, 186, 124, 0.15); color: var(--green); }
+    .bucket-culture { background: rgba(249, 24, 128, 0.15); color: #f91880; }
+    .bucket-nearby { background: rgba(255, 122, 0, 0.15); color: var(--orange); }
+    .vector-grid {
+      display: grid;
+      grid-template-columns: repeat(24, 1fr);
+      gap: 2px;
+    }
+    .vector-cell {
+      height: 6px;
+      border-radius: 2px;
+      animation: vectorPulse 1.5s ease infinite;
+    }
+    @keyframes vectorPulse {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+    .cluster-canvas {
+      position: relative;
+      height: 180px;
+    }
+    .cluster-point {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      transition: all 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .cluster-group {
+      position: absolute;
+      border: 1.5px dashed;
+      border-radius: 50%;
+      opacity: 0;
+      animation: clusterForm 0.8s ease forwards;
+    }
+    @keyframes clusterForm {
+      0% { transform: scale(0); opacity: 0; }
+      100% { transform: scale(1); opacity: 0.35; }
+    }
+    .rank-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .rank-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .rank-fill {
+      height: 20px;
+      border-radius: 4px;
+      width: 0;
+      transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .rank-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      min-width: 90px;
+    }
+    .rank-score {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      min-width: 36px;
+    }
+    .story-cards {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 4px 0;
+      scrollbar-width: none;
+    }
+    .story-cards::-webkit-scrollbar { display: none; }
+    .story-card {
+      flex-shrink: 0;
+      width: 260px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: all 0.4s ease;
+    }
+    .story-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .story-card.headline {
+      border-color: var(--accent);
+    }
+    .story-card-headline {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+    .story-card-summary {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+    .story-meta {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--accent);
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 24px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    button {
+      font-family: inherit;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 9999px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: #1a8cd8;
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: rgba(239, 243, 244, 0.1);
+      border-color: var(--text-secondary);
+    }
+    button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .progress {
+      text-align: center;
+      padding: 12px 16px 24px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="controls">
+      <button class="btn-primary" id="startBtn">Run Pipeline</button>
+      <button class="btn-secondary" id="resetBtn" disabled>Reset</button>
+    </div>
+    <div class="progress" id="progress">See how posts become stories</div>
+    
+    <div class="pipeline" id="pipeline">
+      <div class="stage" id="stage-1">
+        <div class="stage-header">
+          <div class="stage-number">1</div>
+          <h2 class="stage-title">Ingest</h2>
+        </div>
+        <p class="stage-desc">Fetch recent public posts from the X API across seven topic buckets.</p>
+        <div class="visual">
+          <div style="margin-bottom: 10px;">
+            <span class="bucket-label bucket-ai">AI</span>
+            <span class="bucket-label bucket-breaking">Breaking</span>
+            <span class="bucket-label bucket-tech">Tech</span>
+            <span class="bucket-label bucket-politics">Politics</span>
+            <span class="bucket-label bucket-business">Business</span>
+            <span class="bucket-label bucket-culture">Culture</span>
+            <span class="bucket-label bucket-nearby">Nearby</span>
+          </div>
+          <div class="tweets-flow" id="tweets-flow"></div>
+        </div>
+      </div>
+
+      <div class="stage" id="stage-2">
+        <div class="stage-header">
+          <div class="stage-number">2</div>
+          <h2 class="stage-title">Preprocess</h2>
+        </div>
+        <p class="stage-desc">Normalize text, deduplicate, and extract hashtags and URLs.</p>
+        <div class="visual">
+          <div style="display: flex; gap: 16px; align-items: center; justify-content: center; padding: 12px 0;">
+            <div id="pre-count" style="font-size: 2rem; color: var(--text-secondary); font-weight: 700;">&mdash;</div>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="color: var(--text-secondary);">
+              <path d="M5 12h14m-6-6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div id="post-count" style="font-size: 2rem; color: var(--accent); font-weight: 700;">&mdash;</div>
+          </div>
+          <div style="text-align: center; font-size: 13px; color: var(--text-secondary);">
+            Raw posts &rarr; Clean, unique posts
+          </div>
+        </div>
+      </div>
+
+      <div class="stage" id="stage-3">
+        <div class="stage-header">
+          <div class="stage-number">3</div>
+          <h2 class="stage-title">Embed</h2>
+        </div>
+        <p class="stage-desc">Convert each post into a 1536-dimensional vector with OpenAI embeddings.</p>
+        <div class="visual">
+          <div class="vector-grid" id="vector-grid"></div>
+          <div style="text-align: center; margin-top: 10px; font-size: 13px; color: var(--text-secondary);">
+            text-embedding-3-small &middot; 1536 dimensions
+          </div>
+        </div>
+      </div>
+
+      <div class="stage" id="stage-4">
+        <div class="stage-header">
+          <div class="stage-number">4</div>
+          <h2 class="stage-title">Cluster</h2>
+        </div>
+        <p class="stage-desc">Group semantically similar posts with DBSCAN, then merge on shared URLs or hashtags.</p>
+        <div class="visual">
+          <div class="cluster-canvas" id="cluster-canvas"></div>
+        </div>
+      </div>
+
+      <div class="stage" id="stage-5">
+        <div class="stage-header">
+          <div class="stage-number">5</div>
+          <h2 class="stage-title">Rank</h2>
+        </div>
+        <p class="stage-desc">Score each cluster across four weighted signals.</p>
+        <div class="visual">
+          <div class="rank-bars" id="rank-bars"></div>
+        </div>
+      </div>
+
+      <div class="stage" id="stage-6">
+        <div class="stage-header">
+          <div class="stage-number">6</div>
+          <h2 class="stage-title">Summarize</h2>
+        </div>
+        <p class="stage-desc">Generate a headline and summary for each cluster with GPT-4o-mini.</p>
+        <div class="visual">
+          <div class="story-cards" id="story-cards"></div>
+        </div>
+      </div>
+
+      <div class="stage" id="stage-7">
+        <div class="stage-header">
+          <div class="stage-number">7</div>
+          <h2 class="stage-title">Cache &amp; Serve</h2>
+        </div>
+        <p class="stage-desc">Persist stories to Redis. The API serves from cache and refreshes in the background.</p>
+        <div class="visual">
+          <div style="text-align: center; padding: 8px 0;">
+            <div style="font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text);">GET /api/stories</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">Stories ready</div>
+            <div id="story-count" style="font-size: 2.5rem; color: var(--accent); margin-top: 8px; font-weight: 700;">&mdash;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const colors = {
+      ai: '#7856ff',
+      breaking: '#f91880',
+      tech: '#1d9bf0',
+      politics: '#ffd400',
+      business: '#00ba7c',
+      culture: '#f91880',
+      nearby: '#ff7a00'
+    };
+    
+    const buckets = Object.keys(colors);
+    let isRunning = false;
+    
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const progress = document.getElementById('progress');
+    
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    
+    function activateStage(n) {
+      for (let i = 1; i < n; i++) {
+        const s = document.getElementById(`stage-${i}`);
+        s.classList.remove('active');
+        s.classList.add('completed');
+      }
+      const stage = document.getElementById(`stage-${n}`);
+      stage.classList.add('active');
+      stage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    async function runIngest() {
+      progress.textContent = 'Stage 1/7 — Ingesting posts from X API...';
+      activateStage(1);
+      const flow = document.getElementById('tweets-flow');
+      flow.innerHTML = '';
+      for (let i = 0; i < 75; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'tweet-dot';
+        const b = buckets[Math.floor(Math.random() * buckets.length)];
+        dot.style.background = colors[b];
+        dot.style.animationDelay = `${i * 18}ms`;
+        flow.appendChild(dot);
+        await sleep(18);
+      }
+      await sleep(400);
+    }
+    
+    async function runPreprocess() {
+      progress.textContent = 'Stage 2/7 — Deduplicating and normalizing...';
+      activateStage(2);
+      const pre = document.getElementById('pre-count');
+      const post = document.getElementById('post-count');
+      pre.textContent = '75';
+      await sleep(250);
+      for (let i = 75; i >= 52; i -= 3) {
+        post.textContent = i;
+        await sleep(40);
+      }
+      post.textContent = '52';
+      await sleep(400);
+    }
+    
+    async function runEmbed() {
+      progress.textContent = 'Stage 3/7 — Generating embeddings...';
+      activateStage(3);
+      const grid = document.getElementById('vector-grid');
+      grid.innerHTML = '';
+      for (let i = 0; i < 192; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'vector-cell';
+        const lum = 30 + Math.random() * 25;
+        cell.style.background = `hsl(206, 82%, ${lum}%)`;
+        cell.style.animationDelay = `${(i % 24) * 50}ms`;
+        grid.appendChild(cell);
+      }
+      await sleep(1800);
+    }
+    
+    async function runCluster() {
+      progress.textContent = 'Stage 4/7 — Clustering with DBSCAN...';
+      activateStage(4);
+      const canvas = document.getElementById('cluster-canvas');
+      canvas.innerHTML = '';
+      const points = [];
+      for (let i = 0; i < 52; i++) {
+        const pt = document.createElement('div');
+        pt.className = 'cluster-point';
+        const b = buckets[Math.floor(Math.random() * buckets.length)];
+        pt.style.background = colors[b];
+        pt.style.left = `${10 + Math.random() * 80}%`;
+        pt.style.top = `${10 + Math.random() * 80}%`;
+        canvas.appendChild(pt);
+        points.push(pt);
+      }
+      await sleep(700);
+      const centers = [
+        { x: 15, y: 30 }, { x: 42, y: 60 }, { x: 68, y: 25 },
+        { x: 82, y: 68 }, { x: 30, y: 78 }
+      ];
+      points.forEach((p, i) => {
+        const c = centers[i % centers.length];
+        p.style.left = `${c.x + (Math.random() - 0.5) * 14}%`;
+        p.style.top = `${c.y + (Math.random() - 0.5) * 14}%`;
+      });
+      await sleep(1100);
+      const clrVals = Object.values(colors);
+      centers.forEach((c, i) => {
+        const g = document.createElement('div');
+        g.className = 'cluster-group';
+        g.style.left = `${c.x - 10}%`;
+        g.style.top = `${c.y - 28}%`;
+        g.style.width = '76px';
+        g.style.height = '76px';
+        g.style.borderColor = clrVals[i];
+        g.style.animationDelay = `${i * 150}ms`;
+        canvas.appendChild(g);
+      });
+      await sleep(900);
+    }
+    
+    async function runRank() {
+      progress.textContent = 'Stage 5/7 — Scoring and ranking...';
+      activateStage(5);
+      const bars = document.getElementById('rank-bars');
+      bars.innerHTML = '';
+      const signals = [
+        { name: 'Engagement', weight: 35, color: '#1d9bf0' },
+        { name: 'Velocity', weight: 30, color: '#7856ff' },
+        { name: 'Recency', weight: 20, color: '#00ba7c' },
+        { name: 'Diversity', weight: 15, color: '#ff7a00' }
+      ];
+      signals.forEach((s, i) => {
+        const bar = document.createElement('div');
+        bar.className = 'rank-bar';
+        bar.innerHTML = `
+          <span class="rank-label">${s.name}</span>
+          <div class="rank-fill" id="rf-${i}" style="flex:1; background:${s.color};"></div>
+          <span class="rank-score">${s.weight}%</span>
+        `;
+        bars.appendChild(bar);
+      });
+      await sleep(150);
+      signals.forEach((s, i) => {
+        setTimeout(() => {
+          document.getElementById(`rf-${i}`).style.width = `${s.weight * 2.5}%`;
+        }, i * 180);
+      });
+      await sleep(1300);
+    }
+    
+    async function runSummarize() {
+      progress.textContent = 'Stage 6/7 — Generating headlines with GPT-4o-mini...';
+      activateStage(6);
+      const cards = document.getElementById('story-cards');
+      cards.innerHTML = '';
+      const stories = [
+        { headline: 'OpenAI Announces GPT-5 with Enhanced Reasoning', summary: 'OpenAI unveiled GPT-5 today, featuring major improvements in multi-step reasoning and multimodal capabilities.', hl: true },
+        { headline: 'Tech Giants Report Q4 Earnings Beat', summary: 'Major tech companies exceeded analyst expectations, driven by strong cloud and AI revenue growth.', hl: false },
+        { headline: 'Congress Debates New AI Regulation Bill', summary: 'Lawmakers consider bipartisan legislation to establish federal guidelines for AI development and deployment.', hl: false },
+        { headline: 'Startup Raises $500M for Autonomous Vehicles', summary: 'The Series D round values the company at $4B as it expands autonomous testing to new markets.', hl: false }
+      ];
+      for (const s of stories) {
+        const card = document.createElement('div');
+        card.className = `story-card${s.hl ? ' headline' : ''}`;
+        card.innerHTML = `
+          <div class="story-card-headline">${s.headline}</div>
+          <div class="story-card-summary">${s.summary}</div>
+          <div class="story-meta">
+            <span>${(0.5 + Math.random() * 0.4).toFixed(2)}</span>
+            <span>&middot;</span>
+            <span>${Math.floor(10 + Math.random() * 40)}K</span>
+          </div>
+        `;
+        cards.appendChild(card);
+        await sleep(80);
+        card.classList.add('visible');
+        await sleep(350);
+      }
+      await sleep(400);
+    }
+    
+    async function runStore() {
+      progress.textContent = 'Stage 7/7 — Persisting to Redis...';
+      activateStage(7);
+      const count = document.getElementById('story-count');
+      for (let i = 0; i <= 20; i++) {
+        count.textContent = i;
+        await sleep(45);
+      }
+      await sleep(400);
+      document.getElementById('stage-7').classList.remove('active');
+      document.getElementById('stage-7').classList.add('completed');
+      progress.textContent = 'Pipeline complete — 20 stories ready to serve';
+    }
+    
+    async function runPipeline() {
+      if (isRunning) return;
+      isRunning = true;
+      startBtn.disabled = true;
+      resetBtn.disabled = true;
+      await runIngest();
+      await runPreprocess();
+      await runEmbed();
+      await runCluster();
+      await runRank();
+      await runSummarize();
+      await runStore();
+      isRunning = false;
+      resetBtn.disabled = false;
+    }
+    
+    function reset() {
+      document.querySelectorAll('.stage').forEach(s => s.classList.remove('active', 'completed'));
+      document.getElementById('tweets-flow').innerHTML = '';
+      document.getElementById('pre-count').innerHTML = '&mdash;';
+      document.getElementById('post-count').innerHTML = '&mdash;';
+      document.getElementById('vector-grid').innerHTML = '';
+      document.getElementById('cluster-canvas').innerHTML = '';
+      document.getElementById('rank-bars').innerHTML = '';
+      document.getElementById('story-cards').innerHTML = '';
+      document.getElementById('story-count').innerHTML = '&mdash;';
+      progress.textContent = 'See how posts become stories';
+      startBtn.disabled = false;
+      resetBtn.disabled = true;
+    }
+    
+    startBtn.addEventListener('click', runPipeline);
+    resetBtn.addEventListener('click', reset);
+  </script>
+</body>
+</html>

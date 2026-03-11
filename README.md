@@ -12,6 +12,8 @@ Tens of millions of people visit x.com logged out every day, but the current hom
 
 ## Architecture
 
+**[Interactive Pipeline Animation →](pipeline-animation.html)** — step through each stage visually
+
 ```mermaid
 flowchart TD
     A[X API v2] --> B[Ingest]
