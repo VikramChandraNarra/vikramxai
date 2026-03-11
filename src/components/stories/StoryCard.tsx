@@ -1,3 +1,5 @@
+'use client';
+
 import { Story } from '@/lib/types';
 import { formatNum, timeAgo, getStoryLabel, getCategoryStyle } from '@/lib/utils';
 import { TweetSnippet } from './TweetSnippet';
@@ -8,17 +10,19 @@ import { FaXTwitter } from 'react-icons/fa6';
 interface Props {
   story: Story;
   index: number;
+  onClick?: () => void;
 }
 
-export function StoryCard({ story, index }: Props) {
+export function StoryCard({ story, index, onClick }: Props) {
   const label = getStoryLabel(story);
   const categoryStyle = getCategoryStyle(story.category);
   const searchUrl = `https://x.com/search?q=${encodeURIComponent(story.headline)}&src=typed_query&f=live`;
 
   return (
     <article
-      className="px-6 py-5 border-b border-white/[0.08] hover:bg-white/[0.025] transition-colors duration-150 animate-fade-in-up"
+      className={`px-6 py-5 border-b border-white/[0.08] hover:bg-white/[0.025] transition-colors duration-150 animate-fade-in-up ${onClick ? 'cursor-pointer' : ''}`}
       style={{ animationDelay: `${index * 55}ms` }}
+      onClick={onClick}
     >
       {/* Label + Category + time */}
       <div className="flex items-center justify-between mb-2.5">

@@ -1,3 +1,5 @@
+'use client';
+
 import { Story } from '@/lib/types';
 import { formatNum, timeAgo, getStoryLabel, getCategoryStyle } from '@/lib/utils';
 import { SourcesStrip } from './SourcesStrip';
@@ -11,9 +13,10 @@ import { FaXTwitter } from 'react-icons/fa6';
 
 interface Props {
   story: Story;
+  onClick?: () => void;
 }
 
-export function HeroStory({ story }: Props) {
+export function HeroStory({ story, onClick }: Props) {
   const label = getStoryLabel(story);
   const categoryStyle = getCategoryStyle(story.category);
   const searchUrl = `https://x.com/search?q=${encodeURIComponent(story.headline)}&src=typed_query&f=live`;
@@ -24,7 +27,10 @@ export function HeroStory({ story }: Props) {
     .find((m) => m.type === 'photo');
 
   return (
-    <article className="animate-fade-in-up">
+    <article
+      className={`animate-fade-in-up ${onClick ? 'cursor-pointer group' : ''}`}
+      onClick={onClick}
+    >
       {/* Hero image — full-width, above headline */}
       {heroPhoto && (
         <div className="overflow-hidden">
@@ -59,7 +65,7 @@ export function HeroStory({ story }: Props) {
         </div>
 
         {/* Editorial headline */}
-        <h1 className="text-[3.25rem] font-black tracking-[-0.04em] leading-[1.03] text-white mb-5">
+        <h1 className="text-[3.25rem] font-black tracking-[-0.04em] leading-[1.03] text-white mb-5 group-hover:text-white/90 transition-colors duration-150">
           {story.headline}
         </h1>
 
@@ -97,6 +103,7 @@ export function HeroStory({ story }: Props) {
             href={searchUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
             className="ml-auto flex items-center gap-1.5 text-[0.8125rem] text-[#71767b] hover:text-white border border-white/[0.1] hover:border-white/[0.25] rounded-full px-3 py-1 transition-all duration-150 group"
           >
             <FaXTwitter size={11} />

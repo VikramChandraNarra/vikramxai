@@ -7,6 +7,7 @@ import { TopNav } from '@/components/layout/TopNav';
 import { RightPanel } from '@/components/layout/RightPanel';
 import { HeroStory } from '@/components/stories/HeroStory';
 import { StoryCard } from '@/components/stories/StoryCard';
+import { StoryDetailModal } from '@/components/stories/StoryDetailModal';
 import { SkeletonFeed } from '@/components/ui/SkeletonFeed';
 import { LiveIndicator } from '@/components/ui/LiveIndicator';
 import { RiRefreshLine } from 'react-icons/ri';
@@ -179,6 +180,7 @@ export function StoriesPageClient() {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
   const [tick, setTick] = useState(0);
+  const [selectedStory, setSelectedStory] = useState<Story | null>(null);
 
   useEffect(() => {
     const holdTimer = setTimeout(() => setSplash('exit'), 2000);
@@ -321,7 +323,10 @@ export function StoriesPageClient() {
             {/* ── Main content ── */}
             <div className="min-w-0">
               {/* Hero */}
-              <HeroStory story={data!.headlineStory!} />
+              <HeroStory
+                story={data!.headlineStory!}
+                onClick={() => setSelectedStory(data!.headlineStory!)}
+              />
 
               {/* Section header */}
               <div className="flex items-center gap-2.5 px-6 py-4 border-b border-white/8">
@@ -335,7 +340,7 @@ export function StoriesPageClient() {
               <div className="grid grid-cols-2">
                 {allStories.slice(0, CTA_AFTER).map((story, i) => (
                   <div key={story.id} className={i % 2 === 0 ? 'border-r border-white/8' : ''}>
-                    <StoryCard story={story} index={i} />
+                    <StoryCard story={story} index={i} onClick={() => setSelectedStory(story)} />
                   </div>
                 ))}
               </div>
@@ -346,7 +351,7 @@ export function StoriesPageClient() {
                   <div className="grid grid-cols-2 overflow-hidden max-h-[420px]">
                     {allStories.slice(CTA_AFTER, CTA_AFTER + 4).map((story, i) => (
                       <div key={story.id} className={i % 2 === 0 ? 'border-r border-white/8' : ''}>
-                        <StoryCard story={story} index={CTA_AFTER + i} />
+                        <StoryCard story={story} index={CTA_AFTER + i} onClick={() => setSelectedStory(story)} />
                       </div>
                     ))}
                   </div>
@@ -366,11 +371,20 @@ export function StoriesPageClient() {
                 status={data?.status ?? null}
                 stories={allStories}
                 headlineStory={data?.headlineStory ?? null}
+                onStoryClick={setSelectedStory}
               />
             </div>
           </div>
         )}
       </main>
+
+      {/* ── Story detail modal ── */}
+      {selectedStory && (
+        <StoryDetailModal
+          story={selectedStory}
+          onClose={() => setSelectedStory(null)}
+        />
+      )}
     </>
   );
 }
