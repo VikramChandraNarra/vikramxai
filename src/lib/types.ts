@@ -32,6 +32,7 @@ export interface TweetPreview {
   likeCount: number;
   retweetCount: number;
   replyCount?: number;
+  impressionCount?: number;
   media?: TweetMedia[];
 }
 
@@ -55,6 +56,7 @@ export interface Story {
   velocity: number;
   uniqueAuthors: number;
   clusterSize: number;
+  totalImpressions: number;
   generatedAt: string;
   category: string;
 }

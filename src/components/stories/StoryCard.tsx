@@ -1,9 +1,10 @@
 'use client';
 
 import { Story } from '@/lib/types';
-import { formatNum, timeAgo, getStoryLabel, getCategoryStyle, getBestTweetUrl } from '@/lib/utils';
+import { timeAgo, getStoryLabel, getCategoryStyle, getBestTweetUrl, getHeroStat } from '@/lib/utils';
 import { TweetSnippet } from './TweetSnippet';
-import { RiFlashlightFill, RiArrowRightUpLine } from 'react-icons/ri';
+import { HeroStatIcon } from './HeroStatIcon';
+import { RiArrowRightUpLine } from 'react-icons/ri';
 import { AvatarStack } from '@/components/ui/AvatarStack';
 import { FaXTwitter } from 'react-icons/fa6';
 
@@ -11,12 +12,15 @@ interface Props {
   story: Story;
   index: number;
   onClick?: () => void;
+  totalStories: number;
+  medianVelocity: number;
 }
 
-export function StoryCard({ story, index, onClick }: Props) {
-  const label = getStoryLabel(story);
+export function StoryCard({ story, index, onClick, totalStories, medianVelocity }: Props) {
+  const label = getStoryLabel(story, index, totalStories, medianVelocity);
   const categoryStyle = getCategoryStyle(story.category);
   const tweetUrl = getBestTweetUrl(story);
+  const heroStat = getHeroStat(story);
 
   return (
     <article
@@ -62,8 +66,8 @@ export function StoryCard({ story, index, onClick }: Props) {
       {/* Metrics + View on X */}
       <div className="flex items-center gap-4 pt-0.5">
         <div className="flex items-center gap-1">
-          <RiFlashlightFill className="text-[#71767b]" size={11} />
-          <span className="text-[0.75rem] text-[#71767b]">{formatNum(story.velocity)}/hr</span>
+          <HeroStatIcon icon={heroStat.icon} size={11} />
+          <span className="text-[0.75rem] text-[#71767b]">{heroStat.value} {heroStat.label}</span>
         </div>
         <AvatarStack
           tweets={story.representativeTweets}
@@ -80,8 +84,8 @@ export function StoryCard({ story, index, onClick }: Props) {
           onClick={(e) => e.stopPropagation()}
           className="ml-auto flex items-center gap-1 text-[0.75rem] text-[#71767b] hover:text-[#1d9bf0] transition-colors group"
         >
+          <span>View on</span>
           <FaXTwitter size={10} />
-          <span>View on X</span>
           <RiArrowRightUpLine size={10} className="opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-[10px] overflow-hidden transition-all duration-150" />
         </a>
       </div>

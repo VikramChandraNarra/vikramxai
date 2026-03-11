@@ -1,10 +1,11 @@
 'use client';
 
 import { Story } from '@/lib/types';
-import { formatNum, timeAgo, getStoryLabel, getCategoryStyle, getBestTweetUrl } from '@/lib/utils';
+import { formatNum, timeAgo, getStoryLabel, getCategoryStyle, getBestTweetUrl, getHeroStat } from '@/lib/utils';
 import { SourcesStrip } from './SourcesStrip';
+import { HeroStatIcon } from './HeroStatIcon';
+import { MediaGallery } from './MediaGallery';
 import {
-  RiFlashlightFill,
   RiBarChartHorizontalFill,
   RiArrowRightUpLine,
 } from 'react-icons/ri';
@@ -14,35 +15,21 @@ import { FaXTwitter } from 'react-icons/fa6';
 interface Props {
   story: Story;
   onClick?: () => void;
+  totalStories: number;
+  medianVelocity: number;
 }
 
-export function HeroStory({ story, onClick }: Props) {
-  const label = getStoryLabel(story);
+export function HeroStory({ story, onClick, totalStories, medianVelocity }: Props) {
+  const label = getStoryLabel(story, 0, totalStories, medianVelocity);
   const categoryStyle = getCategoryStyle(story.category);
   const tweetUrl = getBestTweetUrl(story);
-
-  // Surface the first photo from any representative tweet
-  const heroPhoto = story.representativeTweets
-    .flatMap((t) => t.media ?? [])
-    .find((m) => m.type === 'photo');
+  const heroStat = getHeroStat(story);
 
   return (
     <article
       className={`animate-fade-in-up ${onClick ? 'cursor-pointer group' : ''}`}
       onClick={onClick}
     >
-      {/* Hero image — full-width, above headline */}
-      {heroPhoto && (
-        <div className="overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={heroPhoto.url}
-            alt=""
-            className="w-full h-[280px] object-cover"
-          />
-        </div>
-      )}
-
       <div className="px-7 pt-7 pb-8 border-b border-white/[0.08]">
         {/* Label + Category + timestamp */}
         <div className="flex items-center justify-between mb-4">
@@ -74,6 +61,9 @@ export function HeroStory({ story, onClick }: Props) {
           {story.summary}
         </p>
 
+        {/* Media slideshow — right after summary */}
+        <MediaGallery tweets={story.representativeTweets} />
+
         {/* Sources from X */}
         <SourcesStrip tweets={story.representativeTweets} />
 
@@ -86,9 +76,9 @@ export function HeroStory({ story, onClick }: Props) {
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <RiFlashlightFill className="text-[#71767b]" size={12} />
+            <HeroStatIcon icon={heroStat.icon} size={12} />
             <span className="text-[0.75rem] text-[#71767b]">
-              {formatNum(story.velocity)}/hr
+              {heroStat.value} {heroStat.label}
             </span>
           </div>
           <AvatarStack

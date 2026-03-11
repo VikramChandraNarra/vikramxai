@@ -34,15 +34,25 @@ async function callOpenAI(prompt: string): Promise<string> {
   return data.choices[0]?.message.content ?? '{}';
 }
 
-async function summarizeCluster(cluster: ScoredCluster, isHeadline: boolean): Promise<Story> {
+async function summarizeCluster(cluster: ScoredCluster): Promise<Story | null> {
   const reps = selectRepresentativeTweets(cluster);
+
+  // If no tweets survive quality filters, skip this cluster entirely.
+  if (reps.length === 0) {
+    console.warn(`[summarize] skipping cluster with ${cluster.tweets.length} tweets — no representative tweets passed quality filters`);
+    return null;
+  }
+
   const tweetLines = reps.map((t) => `@${t.authorUsername}: ${t.text}`).join('\n');
 
   const text = await callOpenAI(`You are a careful news editor. Given these tweets about the same developing story, write:
 1. A specific, punchy headline (under 12 words, no clickbait)
 2. A 2-sentence factual summary covering who, what, and why it matters
 
-Important: If the tweets describe an unverified claim or rumor rather than confirmed facts, signal uncertainty in the headline using varied phrasing — for example: "X users report...", "According to posts on X...", "Social media reports suggest...", "Posts circulating on X claim...", or "Unverified reports indicate...". Vary the language naturally; do not repeat the same phrasing across stories.
+Headline rules:
+- Default to a direct, factual headline about the topic itself. Write it the way a newspaper editor would — lead with the subject, not the platform.
+- Only add hedging language if the tweets describe a genuinely unverified rumor or disputed claim. In that case, use words like "reportedly", "alleged", or "unconfirmed" naturally within the headline rather than prepending a platform reference.
+- Never start a headline with "Buzz", "Chatter", "X users", "People on X", or any phrase that references the platform. The headline should be about the story, not about the fact that people are talking about it.
 
 Tweets:
 ${tweetLines}
@@ -73,20 +83,24 @@ Respond with valid JSON only: {"headline": "...", "summary": "..."}`);
     likeCount: t.likeCount,
     retweetCount: t.retweetCount,
     replyCount: t.replyCount,
+    impressionCount: t.impressionCount,
     media: t.media,
   }));
+
+  const totalImpressions = cluster.tweets.reduce((sum, t) => sum + (t.impressionCount ?? 0), 0);
 
   return {
     id: `story-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     headline,
     summary,
     representativeTweets,
-    isHeadline,
+    isHeadline: false,
     score: cluster.score,
     totalEngagement: cluster.totalEngagement,
     velocity: cluster.velocity,
     uniqueAuthors: cluster.uniqueAuthors,
     clusterSize: cluster.tweets.length,
+    totalImpressions,
     generatedAt: new Date().toISOString(),
     category: cluster.category,
   };
@@ -100,13 +114,13 @@ export async function summarizeClusters(clusters: ScoredCluster[]): Promise<Stor
   for (let i = 0; i < clusters.length; i += SUMMARIZE_BATCH_SIZE) {
     const batch = clusters.slice(i, i + SUMMARIZE_BATCH_SIZE);
     const batchResults = await Promise.allSettled(
-      batch.map((cluster, batchIdx) => summarizeCluster(cluster, i + batchIdx === 0))
+      batch.map((cluster) => summarizeCluster(cluster))
     );
 
     for (const result of batchResults) {
-      if (result.status === 'fulfilled') {
+      if (result.status === 'fulfilled' && result.value !== null) {
         stories.push(result.value);
-      } else {
+      } else if (result.status === 'rejected') {
         console.error('[summarize] cluster failed:', result.reason);
       }
     }

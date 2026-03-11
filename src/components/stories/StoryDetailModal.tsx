@@ -2,16 +2,17 @@
 
 import { useEffect } from 'react';
 import { Story } from '@/lib/types';
-import { formatNum, timeAgo, getStoryLabel, getCategoryStyle, getBestTweetUrl } from '@/lib/utils';
+import { formatNum, timeAgo, getStoryLabel, getCategoryStyle, getBestTweetUrl, getHeroStat } from '@/lib/utils';
 import { TweetSnippet } from './TweetSnippet';
 import { AvatarStack } from '@/components/ui/AvatarStack';
 import {
   RiCloseLine,
-  RiFlashlightFill,
   RiBarChartHorizontalFill,
   RiGroupLine,
   RiArrowRightUpLine,
 } from 'react-icons/ri';
+import { HeroStatIcon } from './HeroStatIcon';
+import { MediaGallery } from './MediaGallery';
 import { FaXTwitter } from 'react-icons/fa6';
 
 // Tweets visible before the conversion gate
@@ -23,6 +24,9 @@ const LOGIN_URL = 'https://x.com/i/flow/login';
 interface Props {
   story: Story;
   onClose: () => void;
+  storyIndex: number;
+  totalStories: number;
+  medianVelocity: number;
 }
 
 // ─── Conversion gate ─────────────────────────────────────────────────────────
@@ -69,10 +73,11 @@ function ConversionGate({ clusterSize }: { clusterSize: number }) {
 
 // ─── Modal ───────────────────────────────────────────────────────────────────
 
-export function StoryDetailModal({ story, onClose }: Props) {
-  const label = getStoryLabel(story);
+export function StoryDetailModal({ story, onClose, storyIndex, totalStories, medianVelocity }: Props) {
+  const label = getStoryLabel(story, storyIndex, totalStories, medianVelocity);
   const categoryStyle = getCategoryStyle(story.category);
   const tweetUrl = getBestTweetUrl(story);
+  const heroStat = getHeroStat(story);
 
   // Close on Escape
   useEffect(() => {
@@ -93,11 +98,6 @@ export function StoryDetailModal({ story, onClose }: Props) {
   const visibleTweets = story.representativeTweets.slice(0, VISIBLE_TWEETS);
   const hiddenTweets = story.representativeTweets.slice(VISIBLE_TWEETS);
   const hasGate = hiddenTweets.length > 0;
-
-  // First photo across all representative tweets
-  const heroPhoto = story.representativeTweets
-    .flatMap((t) => t.media ?? [])
-    .find((m) => m.type === 'photo');
 
   return (
     <>
@@ -146,17 +146,10 @@ export function StoryDetailModal({ story, onClose }: Props) {
 
         {/* ── Scrollable body ── */}
         <div className="flex-1 overflow-y-auto">
-          {/* Hero image */}
-          {heroPhoto && (
-            <div className="overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={heroPhoto.url}
-                alt=""
-                className="w-full h-[200px] object-cover"
-              />
-            </div>
-          )}
+          {/* Media slideshow */}
+          <div className="px-7 pt-4">
+            <MediaGallery tweets={story.representativeTweets} />
+          </div>
 
           {/* ── Headline + summary ── */}
           <div className="px-7 pt-6 pb-5 border-b border-white/[0.08]">
@@ -176,9 +169,9 @@ export function StoryDetailModal({ story, onClose }: Props) {
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <RiFlashlightFill className="text-[#71767b]" size={13} />
+                <HeroStatIcon icon={heroStat.icon} size={13} />
                 <span className="text-[0.8125rem] text-[#71767b]">
-                  {formatNum(story.velocity)}/hr
+                  {heroStat.value} {heroStat.label}
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -194,8 +187,8 @@ export function StoryDetailModal({ story, onClose }: Props) {
                 rel="noopener noreferrer"
                 className="ml-auto flex items-center gap-1.5 text-[0.8125rem] text-[#71767b] hover:text-white border border-white/[0.1] hover:border-white/[0.25] rounded-full px-3.5 py-1.5 transition-all duration-150 group"
               >
+                <span>View on</span>
                 <FaXTwitter size={11} />
-                <span>View on X</span>
                 <RiArrowRightUpLine
                   size={12}
                   className="opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-[12px] overflow-hidden transition-all duration-150"

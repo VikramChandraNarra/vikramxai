@@ -1,15 +1,43 @@
 import { getOrInitPipeline } from '@/lib/pipeline';
 import { MOCK_STORIES } from '@/lib/pipeline/mock-data';
 import { cache, getStories, getCacheMeta, getCacheAgeMs, areTweetsStale, hasStories } from '@/lib/cache';
+import { Story } from '@/lib/types';
 
 const USE_MOCK = process.env.USE_MOCK_DATA === 'true';
 
+function selectHeadline(stories: Story[]): { headlineStory: Story | null; rest: Story[] } {
+  if (stories.length === 0) return { headlineStory: null, rest: [] };
+
+  // Take top 5 by score (stories are already sorted by score)
+  const top5 = stories.slice(0, 5);
+
+  // Among top 5, pick the one with highest clusterSize (tie-break by score)
+  let heroIdx = 0;
+  for (let i = 1; i < top5.length; i++) {
+    const current = top5[heroIdx];
+    const candidate = top5[i];
+    if (
+      candidate.clusterSize > current.clusterSize ||
+      (candidate.clusterSize === current.clusterSize && candidate.score > current.score)
+    ) {
+      heroIdx = i;
+    }
+  }
+
+  const headline = { ...top5[heroIdx], isHeadline: true };
+  const rest = stories
+    .filter((_, i) => i !== heroIdx)
+    .map((s) => ({ ...s, isHeadline: false }));
+
+  return { headlineStory: headline, rest };
+}
+
 export async function GET() {
   if (USE_MOCK) {
-    const [headlineStory = null, ...supportingStories] = MOCK_STORIES;
+    const { headlineStory, rest } = selectHeadline(MOCK_STORIES);
     return Response.json({
       headlineStory,
-      stories: supportingStories,
+      stories: rest,
       status: {
         isRunning: false,
         lastRunAt: new Date().toISOString(),
@@ -41,7 +69,7 @@ export async function GET() {
     getCacheAgeMs(),
   ]);
 
-  const [headlineStory = null, ...supportingStories] = stories;
+  const { headlineStory, rest: supportingStories } = selectHeadline(stories);
 
   return Response.json({
     headlineStory,

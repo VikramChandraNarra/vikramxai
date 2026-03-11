@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import { Story } from '@/lib/types';
+import { computeMedianVelocity } from '@/lib/utils';
 import { TopNav } from '@/components/layout/TopNav';
 import { RightPanel } from '@/components/layout/RightPanel';
 import { HeroStory } from '@/components/stories/HeroStory';
@@ -295,6 +296,21 @@ export function StoriesPageClient() {
   const hasContent = !!data?.headlineStory;
   const allStories = data?.stories ?? [];
 
+  // Rank-relative label helpers — computed once from the full story list
+  const allStoriesFlat = useMemo(
+    () => (data?.headlineStory ? [data.headlineStory, ...allStories] : allStories),
+    [data?.headlineStory, allStories],
+  );
+  const totalStories = allStoriesFlat.length;
+  const medianVelocity = useMemo(() => computeMedianVelocity(allStoriesFlat), [allStoriesFlat]);
+
+  // Resolve selected story's rank index for the modal label
+  const selectedStoryIndex = useMemo(() => {
+    if (!selectedStory) return 0;
+    const idx = allStoriesFlat.findIndex((s) => s.id === selectedStory.id);
+    return idx === -1 ? 0 : idx;
+  }, [selectedStory, allStoriesFlat]);
+
   return (
     <>
       <SplashScreen phase={splash} />
@@ -326,6 +342,8 @@ export function StoriesPageClient() {
               <HeroStory
                 story={data!.headlineStory!}
                 onClick={() => setSelectedStory(data!.headlineStory!)}
+                totalStories={totalStories}
+                medianVelocity={medianVelocity}
               />
 
               {/* Section header */}
@@ -340,7 +358,7 @@ export function StoriesPageClient() {
               <div className="grid grid-cols-2">
                 {allStories.slice(0, CTA_AFTER).map((story, i) => (
                   <div key={story.id} className={i % 2 === 0 ? 'border-r border-white/8' : ''}>
-                    <StoryCard story={story} index={i} onClick={() => setSelectedStory(story)} />
+                    <StoryCard story={story} index={i + 1} onClick={() => setSelectedStory(story)} totalStories={totalStories} medianVelocity={medianVelocity} />
                   </div>
                 ))}
               </div>
@@ -351,7 +369,7 @@ export function StoriesPageClient() {
                   <div className="grid grid-cols-2 overflow-hidden max-h-[420px]">
                     {allStories.slice(CTA_AFTER, CTA_AFTER + 4).map((story, i) => (
                       <div key={story.id} className={i % 2 === 0 ? 'border-r border-white/8' : ''}>
-                        <StoryCard story={story} index={CTA_AFTER + i} onClick={() => setSelectedStory(story)} />
+                        <StoryCard story={story} index={CTA_AFTER + i + 1} onClick={() => setSelectedStory(story)} totalStories={totalStories} medianVelocity={medianVelocity} />
                       </div>
                     ))}
                   </div>
@@ -383,6 +401,9 @@ export function StoriesPageClient() {
         <StoryDetailModal
           story={selectedStory}
           onClose={() => setSelectedStory(null)}
+          storyIndex={selectedStoryIndex}
+          totalStories={totalStories}
+          medianVelocity={medianVelocity}
         />
       )}
     </>

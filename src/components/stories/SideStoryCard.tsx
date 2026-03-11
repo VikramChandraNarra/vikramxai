@@ -1,21 +1,25 @@
 import { Story } from '@/lib/types';
-import { formatNum, timeAgo, getStoryLabel, getBestTweetUrl } from '@/lib/utils';
-import { RiFlashlightFill, RiGroupFill, RiArrowRightUpLine } from 'react-icons/ri';
+import { timeAgo, getStoryLabel, getBestTweetUrl, getHeroStat } from '@/lib/utils';
+import { HeroStatIcon } from './HeroStatIcon';
+import { RiGroupFill, RiArrowRightUpLine } from 'react-icons/ri';
 import { FaXTwitter } from 'react-icons/fa6';
 
 interface Props {
   story: Story;
   index: number;
+  totalStories: number;
+  medianVelocity: number;
 }
 
-export function SideStoryCard({ story, index }: Props) {
-  const label = getStoryLabel(story);
+export function SideStoryCard({ story, index, totalStories, medianVelocity }: Props) {
+  const label = getStoryLabel(story, index, totalStories, medianVelocity);
   const tweetUrl = getBestTweetUrl(story);
+  const heroStat = getHeroStat(story);
 
-  // Surface first photo from any representative tweet
-  const heroPhoto = story.representativeTweets
+  // Surface first media item (photo or video thumbnail) from any representative tweet
+  const heroMedia = story.representativeTweets
     .flatMap((t) => t.media ?? [])
-    .find((m) => m.type === 'photo');
+    .find((m) => m.url);
 
   return (
     <article
@@ -23,11 +27,11 @@ export function SideStoryCard({ story, index }: Props) {
       style={{ animationDelay: `${index * 60}ms` }}
     >
       {/* Optional image */}
-      {heroPhoto && (
+      {heroMedia && (
         <div className="mb-3 overflow-hidden rounded-lg">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={heroPhoto.url}
+            src={heroMedia.url}
             alt=""
             className="w-full h-28 object-cover"
           />
@@ -60,8 +64,8 @@ export function SideStoryCard({ story, index }: Props) {
       {/* Metrics + View on X */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1">
-          <RiFlashlightFill className="text-[#71767b]" size={10} />
-          <span className="text-[0.6875rem] text-[#71767b]">{formatNum(story.velocity)}/hr</span>
+          <HeroStatIcon icon={heroStat.icon} size={10} />
+          <span className="text-[0.6875rem] text-[#71767b]">{heroStat.value} {heroStat.label}</span>
         </div>
         <div className="flex items-center gap-1">
           <RiGroupFill className="text-[#71767b]" size={10} />
@@ -74,8 +78,8 @@ export function SideStoryCard({ story, index }: Props) {
           onClick={(e) => e.stopPropagation()}
           className="ml-auto flex items-center gap-1 text-[0.6875rem] text-[#71767b] hover:text-[#1d9bf0] transition-colors group"
         >
+          <span>View on</span>
           <FaXTwitter size={9} />
-          <span>View on X</span>
           <RiArrowRightUpLine
             size={9}
             className="opacity-0 group-hover:opacity-100 transition-opacity"

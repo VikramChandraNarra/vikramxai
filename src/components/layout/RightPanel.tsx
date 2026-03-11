@@ -1,8 +1,9 @@
 'use client';
 
 import { Story } from '@/lib/types';
-import { formatNum, timeAgo } from '@/lib/utils';
+import { formatNum, timeAgo, getHeroStat } from '@/lib/utils';
 import { LiveIndicator } from '@/components/ui/LiveIndicator';
+import { HeroStatIcon } from '@/components/stories/HeroStatIcon';
 import {
   RiFlashlightFill,
   RiBarChartHorizontalFill,
@@ -53,34 +54,37 @@ export function RightPanel({ status, stories, headlineStory, onStoryClick }: Pro
         <>
           <SectionLabel>What&apos;s moving</SectionLabel>
           <div className="space-y-3">
-            {all.slice(0, 5).map((story, i) => (
-              <button
-                key={story.id}
-                onClick={() => onStoryClick?.(story)}
-                className="group w-full flex items-start gap-3 rounded-lg -mx-2 px-2 py-1.5 hover:bg-white/4 transition-colors text-left"
-              >
-                <span className="text-[0.6875rem] font-black text-[#333] mt-0.5 w-4 shrink-0 text-center select-none">
-                  {i + 1}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[0.8125rem] font-bold text-white leading-[1.3] line-clamp-2 group-hover:text-[#e7e9ea] transition-colors">
-                    {story.headline}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <RiFlashlightFill size={10} className="text-[#71767b]" />
-                    <span className="text-[0.6875rem] text-[#71767b]">
-                      {formatNum(story.velocity)}/hr
-                    </span>
-                    <AvatarStack
-                      tweets={story.representativeTweets}
-                      totalAuthors={story.uniqueAuthors}
-                      maxVisible={2}
-                      size={15}
-                    />
+            {all.slice(0, 5).map((story, i) => {
+              const stat = getHeroStat(story);
+              return (
+                <button
+                  key={story.id}
+                  onClick={() => onStoryClick?.(story)}
+                  className="group w-full flex items-start gap-3 rounded-lg -mx-2 px-2 py-1.5 hover:bg-white/4 transition-colors text-left"
+                >
+                  <span className="text-[0.6875rem] font-black text-[#333] mt-0.5 w-4 shrink-0 text-center select-none">
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[0.8125rem] font-bold text-white leading-[1.3] line-clamp-2 group-hover:text-[#e7e9ea] transition-colors">
+                      {story.headline}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <HeroStatIcon icon={stat.icon} size={10} />
+                      <span className="text-[0.6875rem] text-[#71767b]">
+                        {stat.value} {stat.label}
+                      </span>
+                      <AvatarStack
+                        tweets={story.representativeTweets}
+                        totalAuthors={story.uniqueAuthors}
+                        maxVisible={2}
+                        size={15}
+                      />
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
           <Divider />
         </>
@@ -125,7 +129,7 @@ export function RightPanel({ status, stories, headlineStory, onStoryClick }: Pro
                   {fastest.headline}
                 </p>
                 <span className="text-[0.75rem] text-[#71767b]">
-                  {formatNum(fastest.velocity)}/hr velocity
+                  {formatNum(fastest.velocity)}/hr
                 </span>
               </button>
             )}

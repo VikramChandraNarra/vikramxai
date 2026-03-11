@@ -1,6 +1,7 @@
 import { Story } from '@/lib/types';
-import { formatNum, timeAgo } from '@/lib/utils';
+import { formatNum, timeAgo, getHeroStat } from '@/lib/utils';
 import { LiveIndicator } from '@/components/ui/LiveIndicator';
+import { HeroStatIcon } from '@/components/stories/HeroStatIcon';
 import { RiFlashlightFill, RiGroupFill, RiBarChartHorizontalFill } from 'react-icons/ri';
 
 const SIGNUP_URL = 'https://x.com/i/flow/signup';
@@ -123,40 +124,43 @@ export function RightRail({ status, stories, headlineStory, lastFetched }: Props
         <SectionCard>
           <SectionHeader title="What's happening" />
           <div>
-            {topStories.slice(0, 5).map((story, i) => (
-              <div
-                key={story.id}
-                className="px-4 py-3.5 border-b border-white/[0.06] last:border-b-0 hover:bg-white/[0.03] transition-colors cursor-pointer"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <span className="text-[0.75rem] text-[#71767b] mb-1 block">
-                      {i === 0 ? 'Top story' : `Story ${i + 1}`}
-                    </span>
-                    <p className="text-[0.875rem] font-bold text-white leading-[1.3] line-clamp-2 tracking-[-0.01em]">
-                      {story.headline}
-                    </p>
-                    <div className="flex items-center gap-3 mt-1.5">
-                      <div className="flex items-center gap-1">
-                        <RiFlashlightFill className="text-[#71767b]" size={10} />
-                        <span className="text-[0.75rem] text-[#71767b]">
-                          {formatNum(story.velocity)}/hr
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <RiGroupFill className="text-[#71767b]" size={10} />
-                        <span className="text-[0.75rem] text-[#71767b]">
-                          {story.uniqueAuthors}
-                        </span>
+            {topStories.slice(0, 5).map((story, i) => {
+              const stat = getHeroStat(story);
+              return (
+                <div
+                  key={story.id}
+                  className="px-4 py-3.5 border-b border-white/[0.06] last:border-b-0 hover:bg-white/[0.03] transition-colors cursor-pointer"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[0.75rem] text-[#71767b] mb-1 block">
+                        {i === 0 ? 'Top story' : `Story ${i + 1}`}
+                      </span>
+                      <p className="text-[0.875rem] font-bold text-white leading-[1.3] line-clamp-2 tracking-[-0.01em]">
+                        {story.headline}
+                      </p>
+                      <div className="flex items-center gap-3 mt-1.5">
+                        <div className="flex items-center gap-1">
+                          <HeroStatIcon icon={stat.icon} size={10} />
+                          <span className="text-[0.75rem] text-[#71767b]">
+                            {stat.value} {stat.label}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <RiGroupFill className="text-[#71767b]" size={10} />
+                          <span className="text-[0.75rem] text-[#71767b]">
+                            {story.uniqueAuthors}
+                          </span>
+                        </div>
                       </div>
                     </div>
+                    <span className="text-[0.6875rem] font-black text-[#2a2a2a] w-6 text-center flex-shrink-0 mt-0.5">
+                      {i + 1}
+                    </span>
                   </div>
-                  <span className="text-[0.6875rem] font-black text-[#2a2a2a] w-6 text-center flex-shrink-0 mt-0.5">
-                    {i + 1}
-                  </span>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </SectionCard>
       )}
@@ -202,7 +206,7 @@ export function RightRail({ status, stories, headlineStory, lastFetched }: Props
                     {top.headline}
                   </p>
                   <span className="text-[0.75rem] text-[#71767b]">
-                    {formatNum(top.velocity)}/hr velocity
+                    {formatNum(top.velocity)}/hr
                   </span>
                 </div>
               ) : null;

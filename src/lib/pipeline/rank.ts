@@ -51,12 +51,19 @@ export function scoreAndRank(clusters: Tweet[][], maxStories: number): ScoredClu
   const ONE_HOUR_MS = 60 * 60 * 1000;
   const now = Date.now();
 
-  // Credibility filter: discard clusters that fail every quality signal.
-  // A cluster survives if it passes at least one of: size, engagement, or author diversity.
+  // Credibility filter: a story needs multiple tweets AND at least one quality signal.
+  // Single-tweet clusters are never credible enough to be a story.
   const credible = clusters.filter((tweets) => {
     const size = tweets.length;
     const engagement = tweets.reduce((sum, t) => sum + tweetEngagement(t), 0);
     const authors = new Set(tweets.map((t) => t.authorId)).size;
+
+    // Hard floor: must have at least 2 tweets
+    if (size < 2) {
+      console.debug(`[rank] discarded singleton cluster: engagement=${engagement.toFixed(0)}`);
+      return false;
+    }
+
     const passes = size >= MIN_CLUSTER_SIZE || engagement >= MIN_TOTAL_ENGAGEMENT || authors >= MIN_UNIQUE_AUTHORS;
     if (!passes) {
       console.debug(`[rank] discarded cluster: size=${size} engagement=${engagement.toFixed(0)} authors=${authors}`);

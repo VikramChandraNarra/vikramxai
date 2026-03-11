@@ -17,6 +17,30 @@ export function timeAgo(dateStr: string | null | undefined): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
+export interface HeroStat {
+  icon: 'lightning' | 'chart' | 'eye' | 'users' | 'messages';
+  value: string;
+  label: string;
+}
+
+export function getHeroStat(story: {
+  velocity: number;
+  totalEngagement: number;
+  totalImpressions?: number;
+  uniqueAuthors: number;
+  clusterSize: number;
+}): HeroStat {
+  if (story.velocity >= 50)
+    return { icon: 'lightning', value: formatNum(story.velocity), label: '/hr' };
+  if (story.totalEngagement >= 100)
+    return { icon: 'chart', value: formatNum(story.totalEngagement), label: 'engagement' };
+  if ((story.totalImpressions ?? 0) >= 1000)
+    return { icon: 'eye', value: formatNum(story.totalImpressions!), label: 'views' };
+  if (story.uniqueAuthors >= 5)
+    return { icon: 'users', value: String(story.uniqueAuthors), label: 'voices' };
+  return { icon: 'messages', value: String(story.clusterSize), label: 'posts' };
+}
+
 export interface StoryLabel {
   text: string;
   dotClass: string;
@@ -26,20 +50,30 @@ export interface StoryLabel {
 export function getStoryLabel(story: {
   isHeadline?: boolean;
   velocity: number;
-  uniqueAuthors: number;
-  score: number;
-}): StoryLabel {
-  if (story.velocity > 5000)
-    return { text: 'Breaking', dotClass: 'bg-red-500', textClass: 'text-red-400' };
+}, index: number, total: number, medianVelocity: number): StoryLabel {
   if (story.isHeadline)
     return { text: 'Top Story', dotClass: 'bg-[#1d9bf0]', textClass: 'text-[#1d9bf0]' };
-  if (story.velocity > 1500)
+
+  const pct = total > 1 ? index / (total - 1) : 0;
+
+  // Top 10% — but only if velocity is also > 3× median
+  if (pct <= 0.1 && story.velocity > 3 * medianVelocity && medianVelocity > 0)
+    return { text: 'Breaking', dotClass: 'bg-red-500', textClass: 'text-red-400' };
+
+  if (pct <= 0.3)
     return { text: 'Trending', dotClass: 'bg-amber-400', textClass: 'text-amber-400' };
-  if (story.uniqueAuthors > 30)
-    return { text: 'Widespread', dotClass: 'bg-emerald-400', textClass: 'text-emerald-400' };
-  if (story.score > 0.5)
+
+  if (pct <= 0.6)
     return { text: 'Rising', dotClass: 'bg-violet-400', textClass: 'text-violet-400' };
-  return { text: 'Developing', dotClass: 'bg-[#71767b]', textClass: 'text-[#71767b]' };
+
+  return { text: 'New', dotClass: 'bg-slate-400', textClass: 'text-slate-400' };
+}
+
+export function computeMedianVelocity(stories: { velocity: number }[]): number {
+  if (stories.length === 0) return 0;
+  const sorted = [...stories].map((s) => s.velocity).sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
 }
 
 export type StoryCategory = 'ai' | 'technology' | 'politics' | 'business' | 'culture' | 'breaking' | 'general';

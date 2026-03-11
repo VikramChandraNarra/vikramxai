@@ -51,6 +51,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 12450,
     uniqueAuthors: 3,
     clusterSize: 47,
+    totalImpressions: 15200000,
     generatedAt: minutesAgo(5),
   },
   {
@@ -89,6 +90,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 3420,
     uniqueAuthors: 2,
     clusterSize: 31,
+    totalImpressions: 8500000,
     generatedAt: minutesAgo(10),
   },
   {
@@ -127,6 +129,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 8920,
     uniqueAuthors: 2,
     clusterSize: 52,
+    totalImpressions: 22000000,
     generatedAt: minutesAgo(8),
   },
   {
@@ -165,6 +168,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 6850,
     uniqueAuthors: 2,
     clusterSize: 38,
+    totalImpressions: 4200000,
     generatedAt: minutesAgo(3),
   },
   {
@@ -203,6 +207,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 2210,
     uniqueAuthors: 2,
     clusterSize: 29,
+    totalImpressions: 3100000,
     generatedAt: minutesAgo(15),
   },
   {
@@ -241,6 +246,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 1840,
     uniqueAuthors: 2,
     clusterSize: 24,
+    totalImpressions: 2800000,
     generatedAt: minutesAgo(20),
   },
   {
@@ -290,6 +296,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 3820,
     uniqueAuthors: 3,
     clusterSize: 35,
+    totalImpressions: 5600000,
     generatedAt: minutesAgo(22),
   },
   {
@@ -328,6 +335,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 2940,
     uniqueAuthors: 2,
     clusterSize: 32,
+    totalImpressions: 4800000,
     generatedAt: minutesAgo(30),
   },
   {
@@ -377,6 +385,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 3370,
     uniqueAuthors: 3,
     clusterSize: 38,
+    totalImpressions: 4200000,
     generatedAt: minutesAgo(35),
   },
   {
@@ -415,6 +424,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 2480,
     uniqueAuthors: 2,
     clusterSize: 28,
+    totalImpressions: 3500000,
     generatedAt: minutesAgo(58),
   },
   {
@@ -453,6 +463,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 830,
     uniqueAuthors: 2,
     clusterSize: 18,
+    totalImpressions: 1200000,
     generatedAt: minutesAgo(130),
   },
   {
@@ -502,6 +513,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 3610,
     uniqueAuthors: 3,
     clusterSize: 42,
+    totalImpressions: 9800000,
     generatedAt: minutesAgo(75),
   },
   {
@@ -540,6 +552,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 1890,
     uniqueAuthors: 2,
     clusterSize: 26,
+    totalImpressions: 2200000,
     generatedAt: minutesAgo(95),
   },
   {
@@ -589,6 +602,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 1260,
     uniqueAuthors: 3,
     clusterSize: 22,
+    totalImpressions: 1800000,
     generatedAt: minutesAgo(155),
   },
   {
@@ -627,6 +641,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 5240,
     uniqueAuthors: 2,
     clusterSize: 25,
+    totalImpressions: 2500000,
     generatedAt: minutesAgo(80),
   },
   {
@@ -665,6 +680,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 780,
     uniqueAuthors: 2,
     clusterSize: 15,
+    totalImpressions: 900000,
     generatedAt: minutesAgo(185),
   },
   {
@@ -703,6 +719,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 540,
     uniqueAuthors: 2,
     clusterSize: 12,
+    totalImpressions: 600000,
     generatedAt: minutesAgo(260),
   },
   {
@@ -741,6 +758,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 1420,
     uniqueAuthors: 2,
     clusterSize: 34,
+    totalImpressions: 5100000,
     generatedAt: minutesAgo(300),
   },
   {
@@ -790,6 +808,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 1650,
     uniqueAuthors: 3,
     clusterSize: 30,
+    totalImpressions: 4500000,
     generatedAt: minutesAgo(220),
   },
   {
@@ -828,6 +847,7 @@ export const MOCK_STORIES: Story[] = [
     velocity: 910,
     uniqueAuthors: 2,
     clusterSize: 20,
+    totalImpressions: 1500000,
     generatedAt: minutesAgo(400),
   },
 ];
