@@ -10,7 +10,7 @@ X Stories turns the logged-out X homepage into a modern editorial front page. In
 
 ## Why
 
-Tens of millions of people visit x.com logged out every day, but the current homepage doesn't convey what's actually happening across the platform. This project explores a different entry point: a live, AI-curated front page for the internet — built entirely from public conversations on X.
+Tens of millions of people visit x.com logged out every single day, but the current homepage doesn't convey what's actually happening across the platform. This project explores a different entry point: a live, AI-curated front page for the internet — built entirely from public conversations on X.
 
 ## Architecture
 
