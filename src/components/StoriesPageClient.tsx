@@ -175,6 +175,7 @@ export function StoriesPageClient() {
   const [data, setData] = useState<StoriesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [ingesting, setIngesting] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
   const [tick, setTick] = useState(0);
@@ -202,11 +203,19 @@ export function StoriesPageClient() {
   }, []);
 
   const refreshPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const ingestPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const stopRefreshPoll = useCallback(() => {
     if (refreshPollRef.current) {
       clearInterval(refreshPollRef.current);
       refreshPollRef.current = null;
+    }
+  }, []);
+
+  const stopIngestPoll = useCallback(() => {
+    if (ingestPollRef.current) {
+      clearInterval(ingestPollRef.current);
+      ingestPollRef.current = null;
     }
   }, []);
 
@@ -218,8 +227,9 @@ export function StoriesPageClient() {
       clearInterval(pollTimer);
       clearInterval(tickTimer);
       stopRefreshPoll();
+      stopIngestPoll();
     };
-  }, [fetchStories, stopRefreshPoll]);
+  }, [fetchStories, stopRefreshPoll, stopIngestPoll]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -249,6 +259,34 @@ export function StoriesPageClient() {
     }, REFRESH_POLL_MS);
   }, [stopRefreshPoll]);
 
+  const handleIngest = useCallback(async () => {
+    setIngesting(true);
+    stopIngestPoll();
+    try {
+      await fetch('/api/stories/ingest', { method: 'POST' });
+    } catch {
+      // ignore
+    }
+
+    ingestPollRef.current = setInterval(async () => {
+      try {
+        const res = await fetch('/api/stories');
+        if (!res.ok) return;
+        const json: StoriesData = await res.json();
+        setData(json);
+        setLastFetched(new Date());
+        setFetchError(null);
+
+        if (!json.status?.isRunning) {
+          setIngesting(false);
+          stopIngestPoll();
+        }
+      } catch {
+        // keep polling
+      }
+    }, REFRESH_POLL_MS);
+  }, [stopIngestPoll]);
+
   void tick;
 
   const isRunning = data?.status?.isRunning ?? false;
@@ -262,8 +300,10 @@ export function StoriesPageClient() {
       <TopNav
         isRunning={isRunning}
         isRefreshing={refreshing}
+        isIngesting={ingesting}
         lastFetched={lastFetched}
         onRefresh={handleRefresh}
+        onIngest={handleIngest}
       />
 
       <main className="w-full max-w-[1400px] mx-auto px-3">

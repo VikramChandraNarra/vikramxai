@@ -3,10 +3,10 @@ import { formatNum, timeAgo, getStoryLabel, getCategoryStyle } from '@/lib/utils
 import { SourcesStrip } from './SourcesStrip';
 import {
   RiFlashlightFill,
-  RiGroupFill,
   RiBarChartHorizontalFill,
   RiArrowRightUpLine,
 } from 'react-icons/ri';
+import { AvatarStack } from '@/components/ui/AvatarStack';
 import { FaXTwitter } from 'react-icons/fa6';
 
 interface Props {
@@ -85,12 +85,12 @@ export function HeroStory({ story }: Props) {
               {formatNum(story.velocity)}/hr
             </span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <RiGroupFill className="text-[#71767b]" size={12} />
-            <span className="text-[0.75rem] text-[#71767b]">
-              {story.uniqueAuthors} authors
-            </span>
-          </div>
+          <AvatarStack
+            tweets={story.representativeTweets}
+            totalAuthors={story.uniqueAuthors}
+            maxVisible={4}
+            size={22}
+          />
           <span className="text-[0.75rem] text-[#71767b]">{story.clusterSize} tweets</span>
 
           <a
@@ -103,7 +103,7 @@ export function HeroStory({ story }: Props) {
             <span>View discussion</span>
             <RiArrowRightUpLine
               size={12}
-              className="opacity-0 group-hover:opacity-100 transition-opacity"
+              className="opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-[12px] overflow-hidden transition-all duration-150"
             />
           </a>
         </div>

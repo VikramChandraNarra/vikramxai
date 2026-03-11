@@ -11,11 +11,13 @@ const LOGIN_URL = 'https://x.com/i/flow/login';
 interface Props {
   isRunning: boolean;
   isRefreshing: boolean;
+  isIngesting: boolean;
   lastFetched: Date | null;
   onRefresh: () => void;
+  onIngest: () => void;
 }
 
-export function TopNav({ isRunning, isRefreshing, lastFetched, onRefresh }: Props) {
+export function TopNav({ isRunning, isRefreshing, isIngesting, lastFetched, onRefresh, onIngest }: Props) {
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
@@ -54,6 +56,14 @@ export function TopNav({ isRunning, isRefreshing, lastFetched, onRefresh }: Prop
               {timeAgo(lastFetched.toISOString())}
             </span>
           )}
+          <button
+            onClick={onIngest}
+            disabled={isIngesting || isRefreshing}
+            aria-label="Fetch tweets from X API"
+            className="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[0.6875rem] font-semibold text-amber-400 hover:bg-amber-500/20 transition-colors disabled:opacity-40"
+          >
+            {isIngesting ? 'Fetching…' : 'Fetch Tweets'}
+          </button>
           <button
             onClick={onRefresh}
             disabled={isRefreshing}

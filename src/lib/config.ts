@@ -2,14 +2,15 @@
 // In production replace with a cron job or platform scheduler.
 export const PIPELINE_REFRESH_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-// How long cached stories are considered fresh. Requests within this window
-// are served instantly from cache; stale requests get the old cache immediately
-// while a background refresh fires (stale-while-revalidate).
-export const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+// How long raw tweets from X API are considered fresh before re-ingesting.
+export const TWEETS_TTL_MS = 1 * 60 * 60 * 1000; // 1 hour
 
+// Stories Redis key TTL — generous so stories never vanish mid-session.
+// Actual freshness is driven by TWEETS_TTL_MS + pipeline metadata.
+export const STORIES_REDIS_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 // Maximum tweets fetched per search query bucket during a pipeline run.
 // X API v2 hard cap is 100 per request.
-export const MAX_RESULTS_PER_QUERY = 40;
+export const MAX_RESULTS_PER_QUERY = 75;
 
 // Maximum stories surfaced after ranking and clustering.
 export const MAX_STORIES = 20;
@@ -43,14 +44,40 @@ export const MAX_STORIES = 20;
 // };
 
 export const STORY_BUCKETS: Record<string, string[]> = {
-  breaking: ['breaking news OR "developing story" lang:en -is:retweet'],
-  ai: ['AI OR LLM OR GPT OR Grok OR Claude lang:en -is:retweet'],
-  technology: ['tech news OR startup OR "product launch" lang:en -is:retweet'],
-  politics: ['politics OR election OR government lang:en -is:retweet'],
-  business: ['stocks OR markets OR earnings lang:en -is:retweet'],
-  culture: ['viral OR trending OR music OR film lang:en -is:retweet'],
-};
+  breaking: [
+    '("breaking news" OR "developing story") lang:en -is:retweet -is:reply',
+    '("just announced" OR "major update") lang:en -is:retweet -is:reply has:links'
+  ],
 
+  ai: [
+    '(AI OR "artificial intelligence" OR LLM OR GPT OR Grok OR Claude) lang:en -is:retweet -is:reply',
+    '("AI model" OR "AI startup" OR "AI research" OR "AI release") lang:en -is:retweet -is:reply has:links'
+  ],
+
+  technology: [
+    '("product launch" OR "new device" OR "tech announcement") lang:en -is:retweet -is:reply has:links',
+    '(startup OR "funding round" OR "Series A" OR "tech startup") lang:en -is:retweet -is:reply'
+  ],
+
+  politics: [
+    '("White House" OR Congress OR Senate OR "Supreme Court") lang:en -is:retweet -is:reply has:links',
+    '(election OR campaign OR "policy proposal" OR legislation) lang:en -is:retweet -is:reply'
+  ],
+
+  business: [
+    '(earnings OR "quarterly results" OR "revenue growth") lang:en -is:retweet -is:reply has:links',
+    '(stocks OR markets OR IPO OR "stock market") lang:en -is:retweet -is:reply'
+  ],
+
+  culture: [
+    '(film OR movie OR "box office" OR "tv series") lang:en -is:retweet -is:reply',
+    '(music OR album OR tour OR concert) lang:en -is:retweet -is:reply'
+  ],
+
+  nearby: [
+    '"San Francisco" (news OR event OR traffic OR weather OR transit OR police OR protest OR concert) lang:en -is:retweet -is:reply'
+  ],
+};
 // Clustering
 export const CLUSTER_EPSILON = 0.25;
 export const CLUSTER_MIN_PTS = 2;

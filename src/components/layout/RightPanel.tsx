@@ -3,9 +3,9 @@ import { formatNum, timeAgo } from '@/lib/utils';
 import { LiveIndicator } from '@/components/ui/LiveIndicator';
 import {
   RiFlashlightFill,
-  RiGroupFill,
   RiBarChartHorizontalFill,
 } from 'react-icons/ri';
+import { AvatarStack } from '@/components/ui/AvatarStack';
 
 interface PipelineStatus {
   isRunning: boolean;
@@ -72,10 +72,12 @@ export function RightPanel({ status, stories, headlineStory }: Props) {
                       <span className="text-[0.6875rem] text-[#71767b]">
                         {formatNum(story.velocity)}/hr
                       </span>
-                      <RiGroupFill size={10} className="text-[#71767b]" />
-                      <span className="text-[0.6875rem] text-[#71767b]">
-                        {story.uniqueAuthors}
-                      </span>
+                      <AvatarStack
+                        tweets={story.representativeTweets}
+                        totalAuthors={story.uniqueAuthors}
+                        maxVisible={2}
+                        size={15}
+                      />
                     </div>
                   </div>
                 </a>

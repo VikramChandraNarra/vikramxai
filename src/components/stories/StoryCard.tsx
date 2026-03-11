@@ -1,7 +1,8 @@
 import { Story } from '@/lib/types';
 import { formatNum, timeAgo, getStoryLabel, getCategoryStyle } from '@/lib/utils';
 import { TweetSnippet } from './TweetSnippet';
-import { RiFlashlightFill, RiGroupFill, RiArrowRightUpLine } from 'react-icons/ri';
+import { RiFlashlightFill, RiArrowRightUpLine } from 'react-icons/ri';
+import { AvatarStack } from '@/components/ui/AvatarStack';
 import { FaXTwitter } from 'react-icons/fa6';
 
 interface Props {
@@ -60,10 +61,12 @@ export function StoryCard({ story, index }: Props) {
           <RiFlashlightFill className="text-[#71767b]" size={11} />
           <span className="text-[0.75rem] text-[#71767b]">{formatNum(story.velocity)}/hr</span>
         </div>
-        <div className="flex items-center gap-1">
-          <RiGroupFill className="text-[#71767b]" size={11} />
-          <span className="text-[0.75rem] text-[#71767b]">{story.uniqueAuthors}</span>
-        </div>
+        <AvatarStack
+          tweets={story.representativeTweets}
+          totalAuthors={story.uniqueAuthors}
+          maxVisible={3}
+          size={18}
+        />
         <span className="text-[0.75rem] text-[#71767b]">{story.clusterSize} tweets</span>
 
         <a
@@ -75,7 +78,7 @@ export function StoryCard({ story, index }: Props) {
         >
           <FaXTwitter size={10} />
           <span>View on X</span>
-          <RiArrowRightUpLine size={10} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+          <RiArrowRightUpLine size={10} className="opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-[10px] overflow-hidden transition-all duration-150" />
         </a>
       </div>
     </article>
