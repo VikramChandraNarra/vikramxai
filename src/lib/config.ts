@@ -3,14 +3,14 @@
 export const PIPELINE_REFRESH_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 // How long raw tweets from X API are considered fresh before re-ingesting.
-export const TWEETS_TTL_MS = 1 * 60 * 60 * 1000; // 1 hour
+export const TWEETS_TTL_MS = 24 * 60 * 60 * 1000; // 1 hour
 
 // Stories Redis key TTL — generous so stories never vanish mid-session.
 // Actual freshness is driven by TWEETS_TTL_MS + pipeline metadata.
 export const STORIES_REDIS_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 // Maximum tweets fetched per search query bucket during a pipeline run.
 // X API v2 hard cap is 100 per request.
-export const MAX_RESULTS_PER_QUERY = 75;
+export const MAX_RESULTS_PER_QUERY = 100;
 
 // Maximum stories surfaced after ranking and clustering.
 export const MAX_STORIES = 20;

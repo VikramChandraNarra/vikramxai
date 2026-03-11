@@ -72,15 +72,14 @@ sequenceDiagram
 - **Cache-first serving** — Responses come from Redis; pipeline runs are fire-and-forget background tasks
 - **Source-grounded** — Every story links back to real X posts, not just AI-generated text
 - **Conversion-aware** — The logged-out experience complements the sign-up funnel with gated deeper exploration
-- **Swappable LLM** — Summarization is model-agnostic and designed to work with Grok when API access is available
 
 ## Limitations
 
-- Story IDs are not stable across pipeline runs (no deep linking yet)
-- Single-process scheduling — production would use a platform scheduler (Vercel Cron, etc.)
-- DBSCAN is O(n²), tuned for moderate batch sizes (~500 tweets)
-- Nearby feed uses a hardcoded city rather than true geolocation
-- No retry/backoff for rate-limited API calls
+- Nearby feed uses a hardcoded city instead of real user geolocation. This limits personalization and underestimates how much a location-based news feed can improve sign-up funnels.
+- Story IDs are not stable across pipeline runs (no deep linking yet).
+- Scheduling is single-process only — production would use a platform scheduler (e.g., Vercel Cron).
+- DBSCAN is O(n²) and tuned for moderate batch sizes (~500 tweets).
+- There is no retry/backoff logic for rate-limited API calls yet.
 
 ## Deep Dive
 

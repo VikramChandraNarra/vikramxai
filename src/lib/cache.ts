@@ -64,6 +64,11 @@ export async function setStories(stories: Story[]): Promise<void> {
 export async function areTweetsStale(): Promise<boolean> {
   const meta = await getCacheMeta();
   if (!meta.lastTweetsFetchedAt) return true;
+
+  // If the metadata says we fetched, but no raw tweets actually exist, treat as stale
+  const tweets = await getRawTweets();
+  if (!tweets || tweets.length === 0) return true;
+
   const age = Date.now() - new Date(meta.lastTweetsFetchedAt).getTime();
   return age >= TWEETS_TTL_MS;
 }

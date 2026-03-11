@@ -1,3 +1,5 @@
+import path from 'path';
+import { writeFile, mkdir } from 'fs/promises';
 import {
   cache,
   setStories,
@@ -23,6 +25,20 @@ import { clusterTweets } from './cluster';
 import { scoreAndRank } from './rank';
 import { summarizeClusters } from './summarize';
 import { MOCK_STORIES } from './mock-data';
+
+const TWEETS_DIR = path.join(process.cwd(), 'tweets');
+
+async function saveTweetsSnapshot(tweets: Tweet[]): Promise<void> {
+  try {
+    await mkdir(TWEETS_DIR, { recursive: true });
+    const ts = new Date().toISOString().replace(/[:.]/g, '-');
+    const filePath = path.join(TWEETS_DIR, `tweets-${ts}.json`);
+    await writeFile(filePath, JSON.stringify(tweets, null, 2));
+    console.log(`[Pipeline] Saved ${tweets.length} tweets to ${filePath}`);
+  } catch (err) {
+    console.warn('[Pipeline] Failed to save tweets snapshot:', err);
+  }
+}
 
 const USE_MOCK = process.env.USE_MOCK_DATA === 'true';
 
@@ -66,6 +82,7 @@ class Pipeline {
         console.log(`[Pipeline] Ingested ${tweets.length} tweets`);
         await setRawTweets(tweets);
         await setCacheMeta({ lastTweetsFetchedAt: new Date().toISOString() });
+        await saveTweetsSnapshot(tweets);
       } catch (ingestErr) {
         const fallback = await getRawTweets();
         if (!fallback) throw ingestErr;
@@ -97,6 +114,7 @@ class Pipeline {
       console.log(`[Pipeline] Ingested ${tweets.length} tweets`);
       await setRawTweets(tweets);
       await setCacheMeta({ lastTweetsFetchedAt: new Date().toISOString() });
+      await saveTweetsSnapshot(tweets);
       await this.processTweets(tweets);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
@@ -113,7 +131,7 @@ class Pipeline {
     if (cache.isRefreshing) return;
 
     const tweets = await getRawTweets();
-    if (!tweets) {
+    if (!tweets || tweets.length === 0) {
       console.warn('[Pipeline] No cached tweets found, falling back to full run');
       return this.run();
     }
