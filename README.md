@@ -18,6 +18,8 @@ Tens of millions of people visit x.com logged out every single day, but the curr
 
 ## Architecture
 
+For a deeper look at the backend pipeline, ranking, and cache behavior, see the **backend README**: [`docs/backend-architecture.md`](docs/backend-architecture.md).
+
 ![Pipeline Animation](public/pipeline.gif)
 
 ## Request Flow
